@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌟 Maison Élysée — Boutique E-commerce Parfumerie Prestige
 
-## Getting Started
+Plateforme e-commerce haut de gamme dédiée à la vente de parfums et extraits de haute concentration, conçue pour convertir le trafic mobile (Snapchat, TikTok, Instagram) avec **0 € d'abonnement mensuel** et une gestion ultra-simplifiée pour le vendeur.
 
-First, run the development server:
+---
+
+## ✨ Points Clés du Projet
+
+- **0 € / mois d'abonnement fixe** : Hébergement gratuit sur Vercel, gestion par Stripe sans aucun frais d'abonnement récurrent.
+- **Mobile-First & Ultra Rapide** : Développé en Next.js (App Router) et Tailwind CSS.
+- **Paiement Sécurisé 100% Automatisé** :
+  - Support Apple Pay, Google Pay et Carte Bancaire.
+  - Protection 3D Secure & Stripe Radar anti-fraude.
+- **Espace Vendeur Mobile Dédié (`/admin`)** :
+  - Verrouillé par code PIN (défaut : `1234`).
+  - Ajout de nouveaux parfums en 1 minute depuis un smartphone.
+  - Bouton **📋 Copier l'adresse** en un clic pour générer les étiquettes Mondial Relay et La Poste sans ressaisie.
+  - Mise à jour du statut des commandes et ajout des numéros de suivi.
+- **Livraison Intégrée** :
+  - Mondial Relay (Point Relais & Locker)
+  - Colissimo (Domicile en 48h)
+  - Jauge dynamique de livraison offerte dès 60 € d'achat.
+- **Suivi Colis Client en Direct (`/suivi`)** :
+  - Stepper visuel : 1. Payé ➔ 2. En préparation ➔ 3. Colis en route.
+- **Code Promo Snapchat Intégré** :
+  - Code `SNAP10` (-10% immédiat).
+
+---
+
+## 🚀 Lancement Rapide en Local
 
 ```bash
+# 1. Cloner le projet
+git clone https://github.com/Iyaiya2/boutique-parfum.git
+cd boutique-parfum
+
+# 2. Installer les dépendances
+npm install
+
+# 3. Lancer le serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrez ensuite [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📱 Accès Rapides
 
-## Learn More
+- **Boutique publique** : `http://localhost:3000`
+- **Espace Vendeur** : `http://localhost:3000/admin` (Code secret : `1234`)
+- **Suivi des commandes** : `http://localhost:3000/suivi`
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Stack Technique
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework** : Next.js 16 (React 19, TypeScript)
+- **Styling** : Tailwind CSS v4, Lucide React
+- **Paiements** : Stripe Checkout & Apple Pay / Google Pay
+- **Confetti** : Canvas Confetti
