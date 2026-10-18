@@ -66,8 +66,35 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
     setIsLoading(true);
 
-    // Simulate safe Stripe Payment processing (1.2s delay)
-    setTimeout(() => {
+    try {
+      // 1. Appel à l'API Stripe Checkout
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart,
+          customer: {
+            fullName,
+            email,
+            phone,
+            address,
+            postalCode,
+            city,
+            notes: relayNotes || undefined,
+          },
+          promoCode,
+        }),
+      });
+
+      const data = await res.json();
+
+      // Si une session Stripe réelle est configurée, redirection automatique vers la page Stripe officielle !
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      // Mode démonstration / test (si les clés Stripe ne sont pas encore entrées dans Vercel)
       const orderId = `CMD-${Math.floor(1000 + Math.random() * 9000)}`;
       const newOrder: Order = {
         id: orderId,
@@ -80,7 +107,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
           postalCode,
           city,
           country: 'France',
-          notes: relayNotes || undefined
+          notes: relayNotes || undefined,
         },
         items: [...cart],
         subtotal,
@@ -90,26 +117,27 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         total,
         status: 'a_preparer',
         paymentStatus: 'paye',
-        paymentMethod: paymentChoice === 'apple_pay' ? 'apple_pay' : 'stripe_card'
+        paymentMethod: paymentChoice === 'apple_pay' ? 'apple_pay' : 'stripe_card',
       };
 
-      // Save order in persistent store so seller sees it in /admin immediately!
       addStoredOrder(newOrder);
       setCompletedOrder(newOrder);
       clearCart();
       setIsLoading(false);
 
-      // Trigger victory confetti!
       try {
         confetti({
           particleCount: 80,
           spread: 70,
-          origin: { y: 0.6 }
+          origin: { y: 0.6 },
         });
       } catch {
         // ignore
       }
-    }, 1200);
+    } catch {
+      setIsLoading(false);
+      setFormError('Erreur de traitement du paiement. Veuillez réessayer.');
+    }
   };
 
   const handleCloseAll = () => {
@@ -401,7 +429,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     }`}
                   >
                     <span className="text-xs">🍏 Apple Pay / G Pay</span>
-                    <span className="text-[10px] text-zinc-400">Paiement 1 Clic</span>
+                    <span className="text-[10px] text-zinc-400">Paiement 1 Clic Express</span>
                   </button>
 
                   <button
@@ -414,8 +442,13 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                     }`}
                   >
                     <span className="text-xs">💳 Carte Bancaire</span>
-                    <span className="text-[10px] text-zinc-400">Visa, Mastercard</span>
+                    <span className="text-[10px] text-zinc-400">CB, Visa, Mastercard</span>
                   </button>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-[10px] text-zinc-400">
+                  <span className="bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700">Paiement 3x / 4x Klarna disponible</span>
+                  <span className="bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700">PayPal &amp; Revolut</span>
                 </div>
               </div>
 

@@ -4,21 +4,25 @@ import Stripe from 'stripe';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { items, promoCode } = body;
+    const { items, customer, promoCode } = body;
 
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-    // Si Stripe n'est pas encore configuré (mode développement / démo)
+    // Si Stripe n'est pas encore configuré (mode démonstration / test)
     if (!stripeSecretKey) {
       return NextResponse.json({
         demo: true,
-        message: 'Clé Stripe non configurée. Le site fonctionne en mode Démo Sécurisée.'
+        message: 'Clé Stripe non configurée. Passage en mode Démo Sécurisée.'
       });
     }
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2025-02-24.acacia' as any,
     });
+
+    // Calcul du sous-total
+    const subtotal = items.reduce((acc: number, it: any) => acc + (it.price * it.quantity), 0);
+    const isFreeShipping = subtotal >= 60;
 
     // Construire les line items pour Stripe
     const lineItems = items.map((item: any) => ({
@@ -34,40 +38,67 @@ export async function POST(req: Request) {
       quantity: item.quantity,
     }));
 
-    // Créer la session Stripe Checkout avec collecte d'adresse et options de livraison
+    // Options de livraison
+    const shippingOptions = isFreeShipping
+      ? [
+          {
+            shipping_rate_data: {
+              type: 'fixed_amount' as const,
+              fixed_amount: { amount: 0, currency: 'eur' },
+              display_name: 'Livraison Offerte (Mondial Relay ou Colissimo)',
+              delivery_estimate: {
+                minimum: { unit: 'business_day' as const, value: 2 },
+                maximum: { unit: 'business_day' as const, value: 4 },
+              },
+            },
+          },
+        ]
+      : [
+          {
+            shipping_rate_data: {
+              type: 'fixed_amount' as const,
+              fixed_amount: { amount: 390, currency: 'eur' },
+              display_name: 'Mondial Relay (Point Relais & Locker)',
+              delivery_estimate: {
+                minimum: { unit: 'business_day' as const, value: 3 },
+                maximum: { unit: 'business_day' as const, value: 5 },
+              },
+            },
+          },
+          {
+            shipping_rate_data: {
+              type: 'fixed_amount' as const,
+              fixed_amount: { amount: 590, currency: 'eur' },
+              display_name: 'Colissimo La Poste (Domicile 48h)',
+              delivery_estimate: {
+                minimum: { unit: 'business_day' as const, value: 2 },
+                maximum: { unit: 'business_day' as const, value: 3 },
+              },
+            },
+          },
+        ];
+
     const origin = req.headers.get('origin') || 'http://localhost:3000';
 
+    // Création de la session Stripe Checkout avec TOUS les moyens de paiement activés
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
-      shipping_address_collection: {
-        allowed_countries: ['FR', 'BE', 'CH', 'LU'],
+      customer_email: customer?.email || undefined,
+      phone_number_collection: {
+        enabled: true,
       },
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: 390, currency: 'eur' },
-            display_name: 'Mondial Relay (Point Relais)',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 3 },
-              maximum: { unit: 'business_day', value: 5 },
-            },
-          },
-        },
-        {
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: { amount: 590, currency: 'eur' },
-            display_name: 'Colissimo Domicile 48h',
-            delivery_estimate: {
-              minimum: { unit: 'business_day', value: 2 },
-              maximum: { unit: 'business_day', value: 3 },
-            },
-          },
-        },
-      ],
-      success_url: `${origin}/suivi?session_id={CHECKOUT_SESSION_ID}`,
+      shipping_address_collection: {
+        allowed_countries: ['FR', 'BE', 'CH', 'LU', 'MC'],
+      },
+      shipping_options: shippingOptions,
+      allow_promotion_codes: true,
+      metadata: {
+        customerName: customer?.fullName || '',
+        customerPhone: customer?.phone || '',
+        customerNotes: customer?.notes || '',
+      },
+      success_url: `${origin}/suivi?session_id={CHECKOUT_SESSION_ID}&success=true`,
       cancel_url: `${origin}/#collection`,
     });
 
