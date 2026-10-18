@@ -3,9 +3,9 @@
 import { Perfume, Order, OrderStatus } from '@/types/perfume';
 import { INITIAL_PERFUMES, INITIAL_ORDERS } from './initialData';
 
-const PERFUMES_KEY = 'elysee_perfumes_catalog_v1';
-const ORDERS_KEY = 'elysee_perfumes_orders_v1';
-const ADMIN_PIN_KEY = 'elysee_perfumes_admin_pin';
+const PERFUMES_KEY = 'hq_fragrance_catalog_v2';
+const ORDERS_KEY = 'hq_fragrance_orders_v2';
+const ADMIN_PIN_KEY = 'hq_fragrance_admin_pin';
 
 export function getStoredPerfumes(): Perfume[] {
   if (typeof window === 'undefined') return INITIAL_PERFUMES;

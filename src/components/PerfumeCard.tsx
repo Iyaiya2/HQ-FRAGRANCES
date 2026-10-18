@@ -30,11 +30,11 @@ export default function PerfumeCard({ perfume, onOpenDetails }: PerfumeCardProps
       className="group bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800/80 hover:border-amber-500/50 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between cursor-pointer hover:shadow-2xl hover:shadow-amber-950/20"
     >
       {/* Zone Image */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-950">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-b from-zinc-950 via-zinc-900/60 to-zinc-950 flex items-center justify-center p-2 sm:p-3">
         <img
           src={perfume.image}
           alt={perfume.name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out brightness-95 group-hover:brightness-105"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 ease-out drop-shadow-2xl"
           loading="lazy"
         />
 

@@ -66,19 +66,19 @@ export default function AdminPage() {
     isBestSeller: boolean;
   }>({
     name: '',
-    brand: 'Édition Prestige',
+    brand: 'HQ FRAGRANCE',
     inspiration: '',
-    category: 'Unisexe',
+    category: 'Homme',
     family: 'Boisé',
-    price: 45,
-    price100ml: 75,
+    price: 39,
+    price100ml: 69,
     concentration: 'Extrait de Parfum (30%)',
     description: '',
-    notesTop: 'Bergamote, Poivre rose',
-    notesHeart: 'Rose, Cèdre',
-    notesBase: 'Oud, Vanille, Ambre',
-    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80',
-    stock: 10,
+    notesTop: 'Bergamote, Poivre noir',
+    notesHeart: 'Lavande, Cuir',
+    notesBase: 'Vanille, Cèdre, Ambre',
+    image: '/images/perfumes/king-vanille.png',
+    stock: 15,
     isBestSeller: false
   });
 

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'MAISON ÉLYSÉE | Haute Parfumerie & Extraits de Parfum',
-  description: 'Boutique exclusive de parfums rares, extraits intenses et créations olfactives prestigieuses. Livraison rapide 48h Colissimo & Mondial Relay. Paiement 100% sécurisé.',
+  title: 'HQ FRAGRANCE | Parfums Masculins Purs & Extraits de Parfum 30%',
+  description: 'Boutique officielle HQ Fragrance. Extraits de parfum intenses pour homme dosés à 30% de concentration. Sillage viril, magnétique et tenue extrême 24h+. Expédition 24/48h Colissimo & Mondial Relay. Paiement 100% sécurisé.',
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col bg-[#09090b] text-[#f4f4f5] selection:bg-amber-500/30 selection:text-amber-200">
+      <body className="min-h-full flex flex-col bg-[#08080a] text-[#f4f4f5] selection:bg-amber-500/30 selection:text-amber-200">
         <CartProvider>
           {children}
         </CartProvider>

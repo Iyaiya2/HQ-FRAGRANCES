@@ -45,11 +45,11 @@ export default function PerfumeModal({ perfume, onClose }: PerfumeModalProps) {
         </button>
 
         {/* Colonne Image */}
-        <div className="relative h-64 md:h-full min-h-[300px] bg-zinc-950 overflow-hidden">
+        <div className="relative h-64 md:h-full min-h-[300px] bg-gradient-to-b from-zinc-950 via-zinc-900/60 to-zinc-950 flex items-center justify-center p-4 overflow-hidden">
           <img
             src={perfume.image}
             alt={perfume.name}
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-contain drop-shadow-2xl"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent md:hidden" />
           <div className="absolute top-4 left-4">
