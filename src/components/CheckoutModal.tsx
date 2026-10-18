@@ -411,44 +411,41 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
               </div>
 
-              {/* Mode de Paiement */}
+              {/* Mode de Paiement Stripe */}
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400/90 mb-2 flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5" />
-                  Moyen de Paiement
+                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400/90 mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <CreditCard className="w-3.5 h-3.5" />
+                    Moyen de Paiement
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-normal flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" /> Passerelle Stripe Sécurisée
+                  </span>
                 </h3>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentChoice('apple_pay')}
-                    className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
-                      paymentChoice === 'apple_pay'
-                        ? 'border-amber-500 bg-amber-500/10 text-white font-bold'
-                        : 'border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:border-zinc-700'
-                    }`}
-                  >
-                    <span className="text-xs">🍏 Apple Pay / G Pay</span>
-                    <span className="text-[10px] text-zinc-400">Paiement 1 Clic Express</span>
-                  </button>
+                <div className="p-3.5 rounded-2xl border border-amber-500/40 bg-zinc-950/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-bold text-white tracking-wide">
+                        Paiement par Stripe
+                      </span>
+                    </div>
+                    <span className="text-[10px] bg-amber-500/10 text-amber-300 font-bold px-2 py-0.5 rounded-md border border-amber-500/30">
+                      Sans frais
+                    </span>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setPaymentChoice('card')}
-                    className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
-                      paymentChoice === 'card'
-                        ? 'border-amber-500 bg-amber-500/10 text-white font-bold'
-                        : 'border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:border-zinc-700'
-                    }`}
-                  >
-                    <span className="text-xs">💳 Carte Bancaire</span>
-                    <span className="text-[10px] text-zinc-400">CB, Visa, Mastercard</span>
-                  </button>
-                </div>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed font-light">
+                    Vous pourrez régler au choix par <strong>Apple Pay</strong> (Face ID), <strong>Google Pay</strong>, <strong>Carte Bancaire</strong> (Visa/Mastercard) ou <strong>Klarna (3x/4x)</strong>.
+                  </p>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-[10px] text-zinc-400">
-                  <span className="bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700">Paiement 3x / 4x Klarna disponible</span>
-                  <span className="bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700">PayPal &amp; Revolut</span>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] bg-zinc-900 text-zinc-300 px-2 py-0.5 rounded border border-zinc-800 font-medium">🍏 Apple Pay</span>
+                    <span className="text-[10px] bg-zinc-900 text-zinc-300 px-2 py-0.5 rounded border border-zinc-800 font-medium">🌐 Google Pay</span>
+                    <span className="text-[10px] bg-zinc-900 text-zinc-300 px-2 py-0.5 rounded border border-zinc-800 font-medium">💳 Carte Bleue</span>
+                    <span className="text-[10px] bg-zinc-900 text-zinc-300 px-2 py-0.5 rounded border border-zinc-800 font-medium">🛍️ Klarna 3x/4x</span>
+                  </div>
                 </div>
               </div>
 
@@ -462,19 +459,19 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                      <span>Validation du paiement sécurisé...</span>
+                      <span>Redirection vers Stripe sécurisé...</span>
                     </div>
                   ) : (
                     <>
                       <Lock className="w-4 h-4" />
-                      <span>Payer {total.toFixed(2)} € en toute sécurité</span>
+                      <span>Payer {total.toFixed(2)} € via Stripe</span>
                     </>
                   )}
                 </button>
 
                 <p className="text-center text-[10px] text-zinc-500 mt-2 flex items-center justify-center gap-1">
                   <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                  Paiement chiffré SSL • Stripe Certified Level 1 PCI-DSS
+                  Paiement 100% chiffré SSL • Hébergé par Stripe (PCI-DSS Niveau 1)
                 </p>
               </div>
             </form>
