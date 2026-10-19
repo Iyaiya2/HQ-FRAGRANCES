@@ -6,6 +6,7 @@ import { Perfume, Order, OrderStatus, OlfactoryFamily, Category } from '@/types/
 import {
   getStoredPerfumes,
   saveStoredPerfumes,
+  resetStoredPerfumes,
   getStoredOrders,
   updateStoredOrderStatus,
   getAdminPin,
@@ -68,16 +69,16 @@ export default function AdminPage() {
     name: '',
     brand: 'HQ FRAGRANCE',
     inspiration: '',
-    category: 'Homme',
+    category: 'Unisexe',
     family: 'Boisé',
     price: 39,
     price100ml: 69,
-    concentration: 'Extrait de Parfum (30%)',
+    concentration: 'Extrait de Parfum • 30%',
     description: '',
     notesTop: 'Bergamote, Poivre noir',
     notesHeart: 'Lavande, Cuir',
     notesBase: 'Vanille, Cèdre, Ambre',
-    image: '/images/perfumes/king-vanille.png',
+    image: '/images/perfumes/king-vanille.jpg',
     stock: 15,
     isBestSeller: false
   });
@@ -495,19 +496,31 @@ export default function AdminPage() {
         {/* ONGLET 2 : PARFUMS */}
         {activeTab === 'parfums' && (
           <div className="space-y-4">
-            {/* Bouton Ajouter */}
-            <div className="flex justify-between items-center">
+            {/* Bouton Ajouter & Restaurer */}
+            <div className="flex flex-wrap justify-between items-center gap-3">
               <p className="text-xs text-zinc-400">
                 Vous avez actuellement <strong className="text-white">{perfumes.length} parfums</strong> en vente.
               </p>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(true)}
-                className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/20"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Nouveau Parfum</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const restored = resetStoredPerfumes();
+                    setPerfumes(restored);
+                  }}
+                  className="px-3.5 py-2.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-amber-300 font-semibold text-xs transition-colors cursor-pointer"
+                >
+                  Restaurer les 11 officiels
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Nouveau Parfum</span>
+                </button>
+              </div>
             </div>
 
             {/* Grille des Parfums Existants */}

@@ -1,82 +1,144 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Truck, Clock, Lock } from 'lucide-react';
+import {
+  ShieldCheck,
+  Truck,
+  Clock,
+  Lock,
+  ChevronDown,
+  Award,
+} from 'lucide-react';
+
+const FAQS = [
+  {
+    q: 'Pourquoi les parfums HQ Fragrance tiennent-ils plus de 24 heures ?',
+    a: 'Nos créations sont formulées en Extrait de Parfum concentré à 30% d’huiles parfumées pures (contre 10% à 15% pour une eau de toilette classique), garantissant une tenue intense de plus de 24h sur la peau et plusieurs jours sur les vêtements.',
+  },
+  {
+    q: 'Quels sont les délais et modes de livraison ?',
+    a: 'Toute commande est expédiée sous 24h via Colissimo Domicile (48h) ou Mondial Relay Point Relais & Locker (3 à 5 jours).',
+  },
+  {
+    q: 'Quels sont les moyens de paiement acceptés ?',
+    a: 'Paiement 100% sécurisé via Stripe : Apple Pay, Google Pay, Carte Bancaire (Visa, Mastercard, CB) et paiement en 3x via Klarna.',
+  },
+];
 
 export default function Footer() {
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
   return (
-    <footer className="bg-zinc-950 border-t border-zinc-800 text-zinc-400 text-xs">
-      {/* FAQ Express */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-zinc-900">
-        <h3 className="font-serif text-xl sm:text-2xl text-white text-center mb-8">
-          Questions Fréquentes • HQ Fragrance
-        </h3>
+    <footer className="bg-[#060608] border-t border-white/[0.08] text-zinc-400 text-xs">
+      {/* Simple FAQ Section */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 border-b border-white/[0.06]">
+        <div className="text-center mb-10">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-[#e6d5b8] mb-2">
+            Questions Fréquentes
+          </p>
+          <h3 className="font-serif text-3xl text-white font-normal">
+            Besoin d&apos;une information ?
+          </h3>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-5">
-            <h4 className="font-bold text-sm text-zinc-100 mb-2 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-400" />
-              Quelle est la tenue sur peau et vêtements ?
-            </h4>
-            <p className="text-zinc-400 leading-relaxed font-light">
-              Toutes les créations HQ Fragrance sont formulées avec une <strong>concentration de 30% d&apos;extraits purs</strong>. Le sillage persiste plus de 24 heures sur peau et plusieurs jours sur vos textiles (veste, hoodie, chemise).
-            </p>
+        <div className="divide-y divide-white/[0.08] border-y border-white/[0.08]">
+          {FAQS.map((item, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div key={idx}>
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  className="w-full py-4 text-left flex items-center justify-between gap-4 cursor-pointer"
+                >
+                  <span className="font-medium text-sm text-white">
+                    {item.q}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-zinc-400 shrink-0 transition-transform duration-200 ${
+                      isOpen ? 'rotate-180 text-white' : ''
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <div className="pb-4 text-xs sm:text-sm text-zinc-400 leading-relaxed font-light">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4 Clean Guarantees */}
+      <div className="border-b border-white/[0.06]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-[#e6d5b8] shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">Tenue 24h+</p>
+              <p className="text-[11px] text-zinc-500">Extrait concentré à 30%</p>
+            </div>
           </div>
 
-          <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-5">
-            <h4 className="font-bold text-sm text-zinc-100 mb-2 flex items-center gap-2">
-              <Truck className="w-4 h-4 text-amber-400" />
-              Comment se passe la livraison ?
-            </h4>
-            <p className="text-zinc-400 leading-relaxed font-light">
-              Votre commande est emballée sous protection antichoc sous 24h. Livraison en <strong>48h Colissimo à domicile</strong> ou en <strong>3-5 jours en Locker / Point Relais Mondial Relay</strong> avec lien de suivi SMS et email.
-            </p>
+          <div className="flex items-center gap-3">
+            <Truck className="w-5 h-5 text-[#e6d5b8] shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">Expédition 24/48h</p>
+              <p className="text-[11px] text-zinc-500">Mondial Relay &amp; Colissimo</p>
+            </div>
           </div>
 
-          <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-5">
-            <h4 className="font-bold text-sm text-zinc-100 mb-2 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              Le paiement est-il 100% sécurisé ?
-            </h4>
-            <p className="text-zinc-400 leading-relaxed font-light">
-              Paiement direct et chiffré via l’infrastructure Stripe. Protection anti-fraude Stripe Radar, 3D Secure, Apple Pay, Google Pay et Klarna (3x/4x). Aucune donnée bancaire n&apos;est stockée sur le site.
-            </p>
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-[#e6d5b8] shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">Paiement Sécurisé</p>
+              <p className="text-[11px] text-zinc-500">Apple Pay, CB &amp; Klarna</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Award className="w-5 h-5 text-[#e6d5b8] shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">HQ Fragrance Paris</p>
+              <p className="text-[11px] text-zinc-500">11 créations signatures</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* Bottom Footer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-900 border border-amber-500/40 p-1 flex items-center justify-center">
-            <img src="/images/logo.png" alt="HQ Logo" className="w-full h-full object-contain" />
-          </div>
-          <div className="text-left">
-            <span className="font-serif tracking-[0.2em] text-base text-white font-bold uppercase block">
-              HQ FRAGRANCE
-            </span>
-            <p className="text-[10px] text-zinc-400">
-              Extraits de Parfum pour Homme • Concentration 30%
-            </p>
-          </div>
+          <img
+            src="/images/logo-white.png"
+            alt="HQ Fragrance Paris"
+            loading="lazy"
+            width={90}
+            height={62}
+            className="h-8 w-auto object-contain opacity-90"
+          />
+          <span className="text-xs text-zinc-500">
+            © 2026 HQ Fragrance Paris. Tous droits réservés.
+          </span>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-6 text-zinc-400">
-          <Link href="/#collection" className="hover:text-amber-400 transition-colors uppercase tracking-wider text-xs">
-            Les 11 Parfums
+        <div className="flex flex-wrap items-center gap-6 text-xs text-zinc-400">
+          <Link href="/#collection" className="hover:text-white transition-colors">
+            Parfums
           </Link>
-          <Link href="/suivi" className="hover:text-amber-400 transition-colors uppercase tracking-wider text-xs">
+          <Link href="/suivi" className="hover:text-white transition-colors">
             Suivi Colis
           </Link>
-          <Link href="/admin" className="hover:text-amber-400 transition-colors flex items-center gap-1 text-zinc-400 hover:text-white uppercase tracking-wider text-xs">
-            <Lock className="w-3 h-3 text-amber-500" />
-            Espace Vendeur
+          <Link
+            href="/admin"
+            className="hover:text-white transition-colors inline-flex items-center gap-1"
+          >
+            <Lock className="w-3 h-3" />
+            <span>Vendeur</span>
           </Link>
-        </div>
-
-        <div className="text-[11px] text-zinc-400 text-center md:text-right">
-          © 2026 HQ Fragrance. Tous droits réservés.
         </div>
       </div>
     </footer>

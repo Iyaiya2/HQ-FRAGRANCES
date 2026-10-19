@@ -1,24 +1,31 @@
-export type OlfactoryFamily = 'Boisé' | 'Ambré' | 'Gourmand' | 'Floral' | 'Frais' | 'Cuiré';
+export type OlfactoryFamily = 'Boisé' | 'Ambré' | 'Gourmand' | 'Fruité' | 'Frais' | 'Cuiré' | 'Floral';
 export type Category = 'Homme' | 'Femme' | 'Unisexe';
 
 export interface Perfume {
   id: string;
   name: string;
-  brand: string; // ex: "Collection Privée" ou "Inspiration Grand Cru"
-  inspiration?: string; // ex: "Ombre Nomade"
+  brand: string;
+  inspiration?: string;
   category: Category;
   family: OlfactoryFamily;
   price: number; // 50ml
   price100ml: number; // 100ml
-  concentration: string; // ex: "Extrait de Parfum (30%)"
+  originalPrice?: number; // Compare-at 50ml
+  originalPrice100ml?: number; // Compare-at 100ml
+  concentration: string;
   description: string;
   notes: {
-    top: string[]; // Notes de tête
-    heart: string[]; // Notes de cœur
-    base: string[]; // Notes de fond
+    top: string[];
+    heart: string[];
+    base: string[];
   };
   image: string;
   stock: number;
+  rating?: number;
+  reviewsCount?: number;
+  longevity?: string;
+  sillage?: string;
+  badge?: string;
   isBestSeller?: boolean;
   isNew?: boolean;
   featured?: boolean;
@@ -55,6 +62,7 @@ export interface Order {
   shippingMethod: ShippingMethod;
   shippingFee: number;
   discount: number;
+  promoCode?: string;
   total: number;
   status: OrderStatus;
   trackingNumber?: string;

@@ -1,21 +1,34 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Cormorant_Garamond, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cartContext';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const cormorant = Cormorant_Garamond({
+  variable: '--font-cormorant',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const jakarta = Plus_Jakarta_Sans({
+  variable: '--font-jakarta',
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const jetbrains = JetBrains_Mono({
+  variable: '--font-jetbrains',
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'HQ FRAGRANCE | Parfums Masculins Purs & Extraits de Parfum 30%',
-  description: 'Boutique officielle HQ Fragrance. Extraits de parfum intenses pour homme dosés à 30% de concentration. Sillage viril, magnétique et tenue extrême 24h+. Expédition 24/48h Colissimo & Mondial Relay. Paiement 100% sécurisé.',
+  title: 'HQ FRAGRANCE PARIS | Maison de Haute Parfumerie • Extraits 30%',
+  description:
+    'Boutique officielle HQ Fragrance Paris. Découvrez nos 11 créations olfactives haute concentration (30% Extrait de Parfum). Tenue extrême 24h+, expédition 24/48h Mondial Relay & Colissimo, paiement 100% sécurisé.',
 };
 
 export default function RootLayout({
@@ -24,11 +37,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col bg-[#08080a] text-[#f4f4f5] selection:bg-amber-500/30 selection:text-amber-200">
-        <CartProvider>
-          {children}
-        </CartProvider>
+    <html
+      lang="fr"
+      className={`${cormorant.variable} ${jakarta.variable} ${jetbrains.variable} h-full antialiased dark scroll-smooth`}
+    >
+      <body className="min-h-full flex flex-col bg-[#060608] text-[#f5f3ef] font-sans selection:bg-amber-500/30 selection:text-amber-200">
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );
