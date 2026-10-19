@@ -29,21 +29,21 @@ export default function PerfumeModal({ perfume, onClose }: PerfumeModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-[#101014] border border-white/[0.12] rounded-3xl shadow-2xl z-10 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
+      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white border border-zinc-200 rounded-3xl shadow-2xl z-10 grid grid-cols-1 md:grid-cols-12 overflow-hidden text-zinc-900">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/70 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-white/15 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/90 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 border border-zinc-200 transition-colors cursor-pointer shadow-xs"
           aria-label="Fermer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Left Column: Pure Square/Portrait Studio Photo */}
-        <div className="md:col-span-6 relative bg-zinc-950">
+        <div className="md:col-span-6 relative bg-zinc-100">
           <img
             src={perfume.image}
             alt={perfume.name}
@@ -52,49 +52,49 @@ export default function PerfumeModal({ perfume, onClose }: PerfumeModalProps) {
         </div>
 
         {/* Right Column: Clean Product Details */}
-        <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between gap-6">
+        <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between gap-6 bg-white">
           <div>
-            <div className="flex items-center justify-between gap-2 text-xs text-zinc-400 mb-2">
-              <span className="uppercase tracking-widest text-[#e6d5b8] font-medium">
+            <div className="flex items-center justify-between gap-2 text-xs text-zinc-500 mb-2">
+              <span className="uppercase tracking-widest text-zinc-600 font-semibold">
                 {perfume.family} • Extrait 30%
               </span>
-              <span className="inline-flex items-center gap-1 text-white font-medium">
-                <Star className="w-3.5 h-3.5 fill-[#e6d5b8] text-[#e6d5b8]" />
+              <span className="inline-flex items-center gap-1 text-zinc-950 font-semibold">
+                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                 {(perfume.rating || 4.9).toFixed(1)} ({perfume.reviewsCount || 85} avis)
               </span>
             </div>
 
-            <h2 className="font-serif text-3xl sm:text-4xl text-white font-normal">
+            <h2 className="font-serif text-3xl sm:text-4xl text-zinc-950 font-normal">
               {perfume.name}
             </h2>
 
             {perfume.inspiration && (
-              <p className="text-xs text-zinc-400 mt-1 mb-4">
+              <p className="text-xs text-zinc-500 mt-1 mb-4">
                 {perfume.inspiration}
               </p>
             )}
 
-            <p className="text-sm text-zinc-300 leading-relaxed font-light mb-6">
+            <p className="text-sm text-zinc-600 leading-relaxed font-normal mb-6">
               {perfume.description}
             </p>
 
             {/* Clean Olfactory Notes */}
-            <div className="border-y border-white/[0.08] py-4 mb-6 space-y-2.5 text-xs">
+            <div className="border-y border-zinc-200 py-4 mb-6 space-y-2.5 text-xs">
               <div className="flex justify-between gap-4">
                 <span className="text-zinc-500">Notes de tête</span>
-                <span className="text-zinc-200 text-right font-medium">
+                <span className="text-zinc-900 text-right font-semibold">
                   {perfume.notes.top.join(', ')}
                 </span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-zinc-500">Notes de cœur</span>
-                <span className="text-zinc-200 text-right font-medium">
+                <span className="text-zinc-900 text-right font-semibold">
                   {perfume.notes.heart.join(', ')}
                 </span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-zinc-500">Notes de fond</span>
-                <span className="text-zinc-200 text-right font-medium">
+                <span className="text-zinc-900 text-right font-semibold">
                   {perfume.notes.base.join(', ')}
                 </span>
               </div>
@@ -102,7 +102,7 @@ export default function PerfumeModal({ perfume, onClose }: PerfumeModalProps) {
 
             {/* Format Selection */}
             <div className="space-y-2">
-              <span className="text-xs text-zinc-400 block">
+              <span className="text-xs text-zinc-500 font-medium block">
                 Choisir la contenance :
               </span>
               <div className="grid grid-cols-2 gap-3">
@@ -111,12 +111,12 @@ export default function PerfumeModal({ perfume, onClose }: PerfumeModalProps) {
                   onClick={() => setSize('50ml')}
                   className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     size === '50ml'
-                      ? 'border-white bg-white/[0.08] text-white'
-                      : 'border-white/[0.08] bg-[#08080a] text-zinc-400 hover:border-white/25'
+                      ? 'border-zinc-950 bg-zinc-950 text-white shadow-sm'
+                      : 'border-zinc-200 bg-[#f7f6f2] text-zinc-700 hover:border-zinc-400'
                   }`}
                 >
-                  <div className="font-semibold text-sm text-white">50 ml</div>
-                  <div className="font-serif text-xl text-[#e6d5b8] mt-0.5">
+                  <div className="font-semibold text-sm">50 ml</div>
+                  <div className="font-serif text-xl mt-0.5">
                     {perfume.price} €
                   </div>
                 </button>
@@ -126,12 +126,12 @@ export default function PerfumeModal({ perfume, onClose }: PerfumeModalProps) {
                   onClick={() => setSize('100ml')}
                   className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     size === '100ml'
-                      ? 'border-white bg-white/[0.08] text-white'
-                      : 'border-white/[0.08] bg-[#08080a] text-zinc-400 hover:border-white/25'
+                      ? 'border-zinc-950 bg-zinc-950 text-white shadow-sm'
+                      : 'border-zinc-200 bg-[#f7f6f2] text-zinc-700 hover:border-zinc-400'
                   }`}
                 >
-                  <div className="font-semibold text-sm text-white">100 ml</div>
-                  <div className="font-serif text-xl text-[#e6d5b8] mt-0.5">
+                  <div className="font-semibold text-sm">100 ml</div>
+                  <div className="font-serif text-xl mt-0.5">
                     {perfume.price100ml} €
                   </div>
                 </button>
@@ -148,7 +148,7 @@ export default function PerfumeModal({ perfume, onClose }: PerfumeModalProps) {
               className={`w-full py-4 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 justAdded
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-white hover:bg-zinc-200 text-zinc-950'
+                  : 'bg-zinc-950 hover:bg-zinc-800 text-white shadow-md'
               }`}
             >
               {justAdded ? (

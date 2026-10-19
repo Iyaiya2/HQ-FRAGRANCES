@@ -84,7 +84,7 @@ export default function HomePage() {
   });
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#08080a]">
+    <main className="min-h-screen flex flex-col bg-[#faf9f6] text-zinc-900">
       <Navbar />
 
       <Hero onSelectPerfume={p => setSelectedPerfume(p)} />
@@ -96,23 +96,23 @@ export default function HomePage() {
       >
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.22em] text-[#e6d5b8] mb-1.5">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-1.5">
               Collection Signature
             </p>
-            <h2 className="font-serif text-3xl sm:text-5xl text-white font-normal tracking-tight">
+            <h2 className="font-serif text-3xl sm:text-5xl text-zinc-950 font-normal tracking-tight">
               Nos 11 Extraits de Parfum
             </h2>
           </div>
 
           {/* Simple Search Input */}
           <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-zinc-500" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-zinc-400" />
             <input
               type="text"
               placeholder="Rechercher un parfum ou une note..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-[#101014] border border-white/[0.1] focus:border-white/30 rounded-full pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors"
+              className="w-full bg-white border border-zinc-200 focus:border-zinc-900 rounded-full pl-10 pr-4 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none transition-colors shadow-2xs"
             />
           </div>
         </div>
@@ -133,8 +133,8 @@ export default function HomePage() {
               onClick={() => setSelectedFilter(tab.val)}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 selectedFilter === tab.val
-                  ? 'bg-white text-zinc-950 font-semibold'
-                  : 'bg-[#101014] border border-white/[0.08] text-zinc-300 hover:text-white hover:border-white/20'
+                  ? 'bg-zinc-950 text-white font-semibold shadow-xs'
+                  : 'bg-white border border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:border-zinc-400'
               }`}
             >
               {tab.label}
@@ -144,8 +144,8 @@ export default function HomePage() {
 
         {/* Clean 4-Column Product Grid */}
         {filteredPerfumes.length === 0 ? (
-          <div className="text-center py-16 bg-[#101014] rounded-2xl border border-white/[0.08]">
-            <p className="text-sm text-zinc-300 mb-4">
+          <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200 shadow-xs">
+            <p className="text-sm text-zinc-600 mb-4">
               Aucun parfum ne correspond à « {searchQuery} ».
             </p>
             <button
@@ -154,7 +154,7 @@ export default function HomePage() {
                 setSelectedFilter('Tous');
                 setSearchQuery('');
               }}
-              className="px-5 py-2.5 rounded-full bg-white text-zinc-950 text-xs font-semibold cursor-pointer"
+              className="px-5 py-2.5 rounded-full bg-zinc-950 text-white text-xs font-semibold cursor-pointer"
             >
               Voir tous les parfums
             </button>
@@ -175,14 +175,14 @@ export default function HomePage() {
       {/* 2. AVIS CLIENTS */}
       <section
         id="savoir-faire"
-        className="py-16 sm:py-20 border-t border-white/[0.08] bg-[#08080a]"
+        className="py-16 sm:py-20 border-t border-zinc-200/80 bg-[#f3f1ec]"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-12">
-            <p className="text-xs uppercase tracking-[0.22em] text-[#e6d5b8] mb-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-2">
               Avis Clients Vérifiés
             </p>
-            <h2 className="font-serif text-3xl sm:text-4xl text-white font-normal">
+            <h2 className="font-serif text-3xl sm:text-4xl text-zinc-950 font-normal">
               Noté 4.9/5 par plus de 650 clients
             </h2>
           </div>
@@ -210,29 +210,29 @@ export default function HomePage() {
             ].map((rev, idx) => (
               <div
                 key={idx}
-                className="bg-[#101014] border border-white/[0.08] rounded-2xl p-6 flex flex-col justify-between"
+                className="bg-white border border-zinc-200/80 rounded-2xl p-6 flex flex-col justify-between shadow-xs"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-0.5 text-[#e6d5b8]">
+                    <div className="flex items-center gap-0.5 text-amber-500">
                       {[...Array(5)].map((_, s) => (
-                        <Star key={s} className="w-3.5 h-3.5 fill-[#e6d5b8]" />
+                        <Star key={s} className="w-3.5 h-3.5 fill-amber-500" />
                       ))}
                     </div>
-                    <span className="text-[11px] text-zinc-400">
+                    <span className="text-[11px] text-zinc-500 font-medium">
                       {rev.perfume}
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-zinc-300 font-light leading-relaxed mb-5">
+                  <p className="text-xs sm:text-sm text-zinc-700 font-normal leading-relaxed mb-5">
                     &ldquo;{rev.text}&rdquo;
                   </p>
                 </div>
-                <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 text-xs">
-                  <span className="font-medium text-white">
+                <div className="flex items-center justify-between border-t border-zinc-100 pt-3 text-xs">
+                  <span className="font-semibold text-zinc-950">
                     {rev.name} ({rev.city})
                   </span>
-                  <span className="text-[11px] text-zinc-400 flex items-center gap-1">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> Vérifié
+                  <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-medium">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Vérifié
                   </span>
                 </div>
               </div>

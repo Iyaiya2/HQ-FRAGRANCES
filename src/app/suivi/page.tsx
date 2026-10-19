@@ -70,10 +70,10 @@ function TrackingContent() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 flex-1 w-full">
       {isSuccess && (
-        <div className="mb-8 p-4 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 flex items-center gap-3">
-          <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+        <div className="mb-8 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center gap-3">
+          <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
           <div className="text-xs sm:text-sm">
-            <strong className="text-white block">
+            <strong className="text-emerald-950 block">
               Paiement confirmé avec succès !
             </strong>
             Merci pour votre commande chez HQ Fragrance Paris. Voici le suivi en direct de votre colis.
@@ -84,36 +84,36 @@ function TrackingContent() {
       <div className="text-center mb-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-amber-300 mb-4 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-950 mb-4 transition-colors font-medium"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Retour à la boutique HQ Fragrance
         </Link>
-        <h1 className="font-serif text-3xl sm:text-5xl text-white font-normal mb-2">
+        <h1 className="font-serif text-3xl sm:text-5xl text-zinc-950 font-normal mb-2">
           Suivi de votre Colis
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
+        <p className="text-xs sm:text-sm text-zinc-500 max-w-md mx-auto">
           Entrez votre numéro de commande (ex:{' '}
-          <code className="text-amber-300 font-mono">CMD-8491</code>) ou votre adresse email.
+          <code className="text-zinc-950 font-mono font-semibold">CMD-8491</code>) ou votre adresse email.
         </p>
       </div>
 
       {/* Search Form */}
       <form onSubmit={onSubmit} className="flex gap-2 max-w-md mx-auto mb-6">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-zinc-500" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-zinc-400" />
           <input
             type="text"
             required
             placeholder="Ex: CMD-8491 ou votre@email.fr"
             value={searchCode}
             onChange={e => setSearchCode(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-400 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none"
+            className="w-full bg-white border border-zinc-300 focus:border-zinc-950 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-zinc-950 placeholder-zinc-400 focus:outline-none shadow-2xs"
           />
         </div>
         <button
           type="submit"
-          className="px-6 py-3 rounded-2xl gold-shimmer-bg hover:brightness-110 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 cursor-pointer"
+          className="px-6 py-3 rounded-2xl bg-zinc-950 hover:bg-zinc-800 text-white font-semibold text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer"
         >
           Suivre
         </button>
@@ -131,7 +131,7 @@ function TrackingContent() {
                 setSearchCode(ord.id);
                 handleSearch(ord.id);
               }}
-              className="px-3 py-1 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/40 text-amber-300 font-mono text-[11px] transition-colors cursor-pointer"
+              className="px-3 py-1 rounded-full bg-white hover:bg-zinc-100 border border-zinc-200 text-zinc-900 font-mono text-[11px] font-semibold transition-colors cursor-pointer"
             >
               #{ord.id}
             </button>
@@ -143,16 +143,16 @@ function TrackingContent() {
       {searched && (
         <>
           {foundOrder ? (
-            <div className="luxury-card-surface border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+            <div className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-md animate-in fade-in">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-4">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
                     Commande Confirmée • HQ Fragrance Paris
                   </span>
-                  <h3 className="font-serif text-2xl sm:text-3xl text-white">
+                  <h3 className="font-serif text-2xl sm:text-3xl text-zinc-950">
                     #{foundOrder.id}
                   </h3>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-zinc-500">
                     Passée le{' '}
                     {new Date(foundOrder.createdAt).toLocaleDateString('fr-FR', {
                       day: 'numeric',
@@ -163,8 +163,8 @@ function TrackingContent() {
                 </div>
 
                 <div className="text-right">
-                  <span className="text-xs text-zinc-400 block">Total réglé</span>
-                  <span className="font-serif text-2xl font-bold text-amber-300">
+                  <span className="text-xs text-zinc-500 block">Total réglé</span>
+                  <span className="font-serif text-2xl font-bold text-zinc-950">
                     {foundOrder.total.toFixed(2)} €
                   </span>
                 </div>
@@ -174,11 +174,11 @@ function TrackingContent() {
               <div className="py-4">
                 <div className="grid grid-cols-3 gap-2 text-center relative">
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500 text-zinc-950 flex items-center justify-center font-bold mb-2 shadow-lg shadow-emerald-500/20">
+                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold mb-2">
                       <CheckCircle2 className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-bold text-white">1. Payé</span>
-                    <span className="text-[10px] text-zinc-400">
+                    <span className="text-xs font-bold text-zinc-950">1. Payé</span>
+                    <span className="text-[10px] text-zinc-500">
                       Commande validée
                     </span>
                   </div>
@@ -187,16 +187,16 @@ function TrackingContent() {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 ${
                         foundOrder.status === 'a_preparer'
-                          ? 'gold-shimmer-bg text-zinc-950 animate-pulse'
-                          : 'bg-emerald-500 text-zinc-950'
+                          ? 'bg-zinc-950 text-white animate-pulse'
+                          : 'bg-emerald-600 text-white'
                       }`}
                     >
                       <Package className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-bold text-white">
+                    <span className="text-xs font-bold text-zinc-950">
                       2. Préparation
                     </span>
-                    <span className="text-[10px] text-zinc-400">
+                    <span className="text-[10px] text-zinc-500">
                       {foundOrder.status === 'a_preparer'
                         ? 'En cours d’emballage'
                         : 'Prêt & Emballé'}
@@ -208,16 +208,16 @@ function TrackingContent() {
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 ${
                         foundOrder.status === 'expedie' ||
                         foundOrder.status === 'livre'
-                          ? 'bg-emerald-500 text-zinc-950 shadow-lg shadow-emerald-500/20'
-                          : 'bg-zinc-800 text-zinc-500'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-zinc-100 text-zinc-400 border border-zinc-200'
                       }`}
                     >
                       <Truck className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-bold text-white">
+                    <span className="text-xs font-bold text-zinc-950">
                       3. Expédition
                     </span>
-                    <span className="text-[10px] text-zinc-400">
+                    <span className="text-[10px] text-zinc-500">
                       {foundOrder.status === 'expedie'
                         ? 'Colis en transit'
                         : foundOrder.status === 'livre'
@@ -229,10 +229,10 @@ function TrackingContent() {
               </div>
 
               {/* Carrier & Tracking Number */}
-              <div className="bg-zinc-950/90 border border-zinc-800 rounded-2xl p-4 text-xs space-y-2">
+              <div className="bg-[#faf9f6] border border-zinc-200 rounded-2xl p-4 text-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-400">Transporteur :</span>
-                  <span className="font-bold text-white">
+                  <span className="text-zinc-500">Transporteur :</span>
+                  <span className="font-semibold text-zinc-950">
                     {foundOrder.shippingMethod === 'mondial_relay'
                       ? 'Mondial Relay (Point Relais & Locker)'
                       : 'Colissimo La Poste (Domicile 48h)'}
@@ -240,12 +240,12 @@ function TrackingContent() {
                 </div>
 
                 {foundOrder.trackingNumber ? (
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-800/80">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-200">
                     <div>
-                      <span className="text-zinc-400 block">
+                      <span className="text-zinc-500 block">
                         Numéro de suivi officiel :
                       </span>
-                      <strong className="text-amber-300 font-mono text-sm tracking-wider">
+                      <strong className="text-zinc-950 font-mono text-sm tracking-wider">
                         {foundOrder.trackingNumber}
                       </strong>
                     </div>
@@ -258,14 +258,14 @@ function TrackingContent() {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-200 border border-amber-500/35 flex items-center gap-1.5 font-bold text-[11px]"
+                      className="px-3.5 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white flex items-center gap-1.5 font-semibold text-[11px]"
                     >
                       <span>Suivre sur le transporteur</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>
                 ) : (
-                  <div className="pt-2 border-t border-zinc-800/80 text-zinc-400">
+                  <div className="pt-2 border-t border-zinc-200 text-zinc-500">
                     Votre numéro de suivi sera affiché ici dès la remise au transporteur (sous 24h ouvrées).
                   </div>
                 )}
@@ -273,30 +273,30 @@ function TrackingContent() {
 
               {/* Ordered Perfumes */}
               <div className="space-y-2 text-xs">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                   Flacons de votre commande :
                 </span>
                 {foundOrder.items.map((it, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between bg-zinc-950/60 p-3 rounded-xl border border-zinc-800/80"
+                    className="flex items-center justify-between bg-[#faf9f6] p-3 rounded-xl border border-zinc-200"
                   >
                     <div className="flex items-center gap-3">
                       <img
                         src={it.perfume.image}
                         alt={it.perfume.name}
-                        className="w-12 h-14 object-cover rounded-lg border border-zinc-800"
+                        className="w-12 h-14 object-cover rounded-lg border border-zinc-200"
                       />
                       <div>
-                        <p className="font-serif text-base text-white">
+                        <p className="font-serif text-base text-zinc-950">
                           {it.perfume.name}
                         </p>
-                        <p className="text-zinc-400 text-[11px]">
+                        <p className="text-zinc-500 text-[11px]">
                           Flacon {it.size} • Quantité : {it.quantity}
                         </p>
                       </div>
                     </div>
-                    <span className="font-serif text-base text-amber-200 font-semibold">
+                    <span className="font-serif text-base text-zinc-950 font-semibold">
                       {it.price * it.quantity} €
                     </span>
                   </div>
@@ -304,14 +304,14 @@ function TrackingContent() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 bg-zinc-900/40 rounded-3xl border border-zinc-800">
-              <AlertCircle className="w-10 h-10 text-amber-400 mx-auto mb-2" />
-              <h3 className="font-serif text-xl text-white">
+            <div className="text-center py-12 bg-white rounded-3xl border border-zinc-200 shadow-xs">
+              <AlertCircle className="w-10 h-10 text-zinc-400 mx-auto mb-2" />
+              <h3 className="font-serif text-xl text-zinc-950">
                 Commande introuvable
               </h3>
-              <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1">
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1">
                 Vérifiez le numéro saisi (ex:{' '}
-                <code className="text-amber-300">CMD-8491</code>) ou l&apos;adresse email utilisée lors de votre commande.
+                <code className="text-zinc-950 font-semibold">CMD-8491</code>) ou l&apos;adresse email utilisée lors de votre commande.
               </p>
             </div>
           )}
@@ -323,7 +323,7 @@ function TrackingContent() {
 
 export default function SuiviPage() {
   return (
-    <main className="min-h-screen flex flex-col bg-[#060608]">
+    <main className="min-h-screen flex flex-col bg-[#faf9f6] text-zinc-900">
       <Navbar />
       <Suspense
         fallback={

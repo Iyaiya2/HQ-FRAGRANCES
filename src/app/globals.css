@@ -7,10 +7,9 @@
 }
 
 :root {
-  color-scheme: dark;
-  --background: #08080a;
-  --foreground: #fafafa;
-  --champagne: #e6d5b8;
+  color-scheme: light;
+  --background: #faf9f6;
+  --foreground: #111113;
   --in-oklab: ;
   --in-oklch: ;
 }
@@ -44,32 +43,32 @@ article, .prose-copy {
   max-width: 80ch;
 }
 
-/* Clean minimal scrollbar */
+/* Clean minimal light scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #08080a;
+  background: #f4f3ef;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #d4d4d8;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #a1a1aa;
 }
 
-/* Subtle champagne accent text */
-.champagne-text {
-  color: #e6d5b8;
+.gold-shimmer-bg {
+  background-color: #09090b;
+  color: #ffffff;
 }
 
-.logo-glow {
-  filter: drop-shadow(0 2px 12px rgba(255, 255, 255, 0.08));
+.luxury-card-surface {
+  background-color: #ffffff;
 }
 
 @media (forced-colors: active) {

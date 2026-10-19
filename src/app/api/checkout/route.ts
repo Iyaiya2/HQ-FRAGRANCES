@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import fs from 'fs';
+import path from 'path';
 import { INITIAL_PERFUMES } from '@/lib/initialData';
 
 const VALID_PROMO_CODES: Record<string, number> = {
@@ -10,10 +12,100 @@ const VALID_PROMO_CODES: Record<string, number> = {
   VIP15: 15,
 };
 
+function resolveStripeSecretKey(providedKey?: string): string {
+  if (providedKey && providedKey.trim().startsWith('sk_')) {
+    return providedKey.trim();
+  }
+
+  const envKey =
+    process.env.STRIPE_SECRET_KEY || process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY || '';
+  const cleanedEnv = envKey.replace(/^["']|["']$/g, '').trim();
+  if (cleanedEnv.startsWith('sk_') && !cleanedEnv.startsWith('sk_test_placeholder')) {
+    return cleanedEnv;
+  }
+
+  // Lecture directe de .env.local ou .env à chaud (sans besoin de redémarrer le serveur)
+  for (const fileName of ['.env.local', '.env']) {
+    try {
+      const envPath = path.join(process.cwd(), fileName);
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf8');
+        const match = content.match(/^\s*STRIPE_SECRET_KEY\s*=\s*(.+)\s*$/m);
+        if (match && match[1]) {
+          const fileKey = match[1].replace(/^["']|["']$/g, '').trim();
+          if (
+            fileKey.startsWith('sk_') &&
+            !fileKey.startsWith('sk_test_placeholder') &&
+            !fileKey.startsWith('sk_test_votre')
+          ) {
+            return fileKey;
+          }
+        }
+      }
+    } catch {
+      // ignore fs read errors
+    }
+  }
+
+  return '';
+}
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const cleanKey = String(body.stripeSecretKey || '')
+      .replace(/^["']|["']$/g, '')
+      .trim();
+
+    if (!cleanKey.startsWith('sk_')) {
+      return NextResponse.json(
+        {
+          error:
+            'Clé invalide. Une clé secrète Stripe commence par "sk_test_" ou "sk_live_".',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que la clé fonctionne auprès de Stripe avant de l'enregistrer
+    const stripe = new Stripe(cleanKey);
+    await stripe.balance.retrieve();
+
+    // Enregistrer dans .env.local pour persister la clé
+    const envPath = path.join(process.cwd(), '.env.local');
+    let existing = '';
+    if (fs.existsSync(envPath)) {
+      existing = fs.readFileSync(envPath, 'utf8');
+    }
+
+    if (/^\s*STRIPE_SECRET_KEY\s*=/m.test(existing)) {
+      existing = existing.replace(
+        /^\s*STRIPE_SECRET_KEY\s*=.*$/m,
+        `STRIPE_SECRET_KEY=${cleanKey}`
+      );
+    } else {
+      existing = `${existing.trim()}\nSTRIPE_SECRET_KEY=${cleanKey}\n`.trimStart();
+    }
+
+    fs.writeFileSync(envPath, existing, 'utf8');
+    process.env.STRIPE_SECRET_KEY = cleanKey;
+
+    return NextResponse.json({ ok: true });
+  } catch (err: unknown) {
+    const msg =
+      err instanceof Error ? err.message : 'Clé Stripe refusée par Stripe.';
+    return NextResponse.json(
+      { error: `Clé Stripe invalide : ${msg}` },
+      { status: 400 }
+    );
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { items, customer, promoCode, shippingMethod, orderId } = body;
+    const { items, customer, promoCode, shippingMethod, orderId, stripeKeyOverride } =
+      body;
 
     // 1. Validation de la présence des articles
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -27,6 +119,31 @@ export async function POST(req: Request) {
     if (items.length > 25) {
       return NextResponse.json(
         { error: 'Quantité d’articles excessive.' },
+        { status: 400 }
+      );
+    }
+
+    const stripeSecretKey = resolveStripeSecretKey(stripeKeyOverride);
+
+    // Si l'utilisateur vient de fournir sa clé dans le champ d'activation rapide, on la sauvegarde dans .env.local
+    if (stripeKeyOverride && stripeSecretKey) {
+      try {
+        const envPath = path.join(process.cwd(), '.env.local');
+        fs.writeFileSync(envPath, `STRIPE_SECRET_KEY=${stripeSecretKey}\n`, 'utf8');
+        process.env.STRIPE_SECRET_KEY = stripeSecretKey;
+      } catch {
+        // ignore write error on read-only fs
+      }
+    }
+
+    // AUCUNE validation sans Stripe : si la clé n'est pas configurée, on bloque et on demande la clé
+    if (!stripeSecretKey) {
+      return NextResponse.json(
+        {
+          code: 'STRIPE_KEY_MISSING',
+          error:
+            'Clé secrète Stripe (sk_test_... ou sk_live_...) requise pour ouvrir la page de paiement Stripe.',
+        },
         { status: 400 }
       );
     }
@@ -84,30 +201,20 @@ export async function POST(req: Request) {
         descriptionParts.push(`Remise ${cleanPromo} (-${discountPercent}%) incluse`);
       }
 
+      const safeStripeImages =
+        imageUrl.startsWith('https://') ? [encodeURI(imageUrl)] : undefined;
+
       verifiedLineItems.push({
         price_data: {
           currency: 'eur',
           product_data: {
             name: `${catalogPerfume ? catalogPerfume.name : item.perfume?.name || 'Parfum HQ'} — Flacon ${size}`,
             description: descriptionParts.join(' • '),
-            images: imageUrl.startsWith('http') ? [imageUrl] : undefined,
+            images: safeStripeImages,
           },
           unit_amount: unitAmountCents,
         },
         quantity,
-      });
-    }
-
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-
-    // Mode Démo Sécurisée si aucune clé Stripe active n'est renseignée
-    if (!stripeSecretKey || stripeSecretKey.startsWith('sk_test_placeholder')) {
-      return NextResponse.json({
-        demo: true,
-        verifiedSubtotal,
-        discountPercent,
-        message:
-          'Clé Stripe non configurée. Validation en mode Boutique Directe.',
       });
     }
 
@@ -191,10 +298,14 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Erreur Stripe Checkout Sécurisé:', err);
+    const errMsg =
+      err instanceof Error ? err.message : 'Erreur inconnue Stripe';
     return NextResponse.json(
-      { error: 'Erreur de traitement sécurisé. Veuillez réessayer.' },
+      {
+        error: `Erreur Stripe : ${errMsg}`,
+      },
       { status: 500 }
     );
   }

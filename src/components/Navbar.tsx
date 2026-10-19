@@ -17,17 +17,6 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#08080a]/90 border-b border-white/[0.08]">
-      {/* Simple, Clean Top Bar */}
-      <div className="bg-[#111115] border-b border-white/[0.06] text-zinc-300 text-[11px] py-2 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-center tracking-wide">
-          <span>HQ FRAGRANCE PARIS</span>
-          <span className="text-zinc-600">•</span>
-          <span>Extrait de Parfum concentré à 30%</span>
-          <span className="text-zinc-600">•</span>
-          <span>Expédition 24/48h</span>
-        </div>
-      </div>
-
       {/* Main Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
         {/* Left Links */}
