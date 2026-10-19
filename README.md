@@ -1,4 +1,4 @@
-# 🌟 Maison Élysée — Boutique E-commerce Parfumerie Prestige
+# 🌟 hq-fragrances — Boutique E-commerce Parfumerie Prestige
 
 Plateforme e-commerce haut de gamme dédiée à la vente de parfums et extraits de haute concentration, conçue pour convertir le trafic mobile (Snapchat, TikTok, Instagram) avec **0 € d'abonnement mensuel** et une gestion ultra-simplifiée pour le vendeur.
 
