@@ -89,7 +89,7 @@ function TrackingContent() {
           <ArrowLeft className="w-3.5 h-3.5" />
           Retour à la boutique HQ Fragrance
         </Link>
-        <h1 className="font-serif text-3xl sm:text-5xl text-zinc-950 font-normal mb-2">
+        <h1 className="font-serif text-2xl sm:text-4xl text-zinc-950 font-bold mb-2">
           Suivi de votre Colis
         </h1>
         <p className="text-xs sm:text-sm text-zinc-500 max-w-md mx-auto">

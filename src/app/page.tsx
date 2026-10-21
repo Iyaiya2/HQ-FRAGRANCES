@@ -10,15 +10,14 @@ import Footer from '@/components/Footer';
 import { Perfume } from '@/types/perfume';
 import { INITIAL_PERFUMES } from '@/lib/initialData';
 import { getStoredPerfumes } from '@/lib/store';
-import { Search, Star, CheckCircle } from 'lucide-react';
+import { Star, CheckCircle } from 'lucide-react';
 
 export default function HomePage() {
   const [perfumes, setPerfumes] = useState<Perfume[]>(INITIAL_PERFUMES);
   const [selectedPerfume, setSelectedPerfume] = useState<Perfume | null>(null);
 
-  // Simple Filters & Search
+  // Simple Filters
   const [selectedFilter, setSelectedFilter] = useState<string>('Tous');
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setPerfumes(getStoredPerfumes());
@@ -69,17 +68,6 @@ export default function HomePage() {
       return false;
     }
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchName = perfume.name.toLowerCase().includes(q);
-      const matchInsp = perfume.inspiration?.toLowerCase().includes(q) || false;
-      const matchNotes = [
-        ...perfume.notes.top,
-        ...perfume.notes.heart,
-        ...perfume.notes.base,
-      ].some(n => n.toLowerCase().includes(q));
-      return matchName || matchInsp || matchNotes;
-    }
     return true;
   });
 
@@ -92,102 +80,72 @@ export default function HomePage() {
       {/* 1. LA COLLECTION : LES 11 PARFUMS */}
       <section
         id="collection"
-        className="py-14 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1"
+        className="py-10 sm:py-20 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 w-full flex-1"
       >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 sm:gap-6 mb-7 sm:mb-10">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-1.5">
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.22em] text-zinc-500 mb-1 sm:mb-1.5">
               Collection Signature
             </p>
-            <h2 className="font-serif text-3xl sm:text-5xl text-zinc-950 font-normal tracking-tight">
+            <h2 className="font-serif text-2xl sm:text-3xl xl:text-4xl text-zinc-950 font-bold tracking-tight">
               Nos 11 Extraits de Parfum
             </h2>
           </div>
 
-          {/* Simple Search Input */}
-          <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Rechercher un parfum ou une note..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-zinc-200 focus:border-zinc-900 rounded-full pl-10 pr-4 py-2.5 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none transition-colors shadow-2xs"
-            />
-          </div>
-        </div>
-
-        {/* Simple Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 mb-8">
-          {[
-            { label: `Tous (${perfumes.length})`, val: 'Tous' },
-            { label: 'Best-Sellers', val: 'Best-Sellers' },
-            { label: 'Vanillés & Gourmands', val: 'Gourmands' },
-            { label: 'Fruités', val: 'Fruités' },
-            { label: 'Boisés & Ambrés', val: 'Boisés & Ambrés' },
-            { label: 'Frais', val: 'Frais' },
-          ].map(tab => (
-            <button
-              key={tab.val}
-              type="button"
-              onClick={() => setSelectedFilter(tab.val)}
-              className={`px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                selectedFilter === tab.val
-                  ? 'bg-zinc-950 text-white font-semibold shadow-xs'
-                  : 'bg-white border border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:border-zinc-400'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Clean 4-Column Product Grid */}
-        {filteredPerfumes.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200 shadow-xs">
-            <p className="text-sm text-zinc-600 mb-4">
-              Aucun parfum ne correspond à « {searchQuery} ».
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedFilter('Tous');
-                setSearchQuery('');
-              }}
-              className="px-5 py-2.5 rounded-full bg-zinc-950 text-white text-xs font-semibold cursor-pointer"
-            >
-              Voir tous les parfums
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {filteredPerfumes.map(perfume => (
-              <PerfumeCard
-                key={perfume.id}
-                perfume={perfume}
-                onOpenDetails={p => setSelectedPerfume(p)}
-              />
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {[
+              { label: `Tous (${perfumes.length})`, val: 'Tous' },
+              { label: 'Best-Sellers', val: 'Best-Sellers' },
+              { label: 'Vanillés & Gourmands', val: 'Gourmands' },
+              { label: 'Fruités', val: 'Fruités' },
+              { label: 'Boisés & Ambrés', val: 'Boisés & Ambrés' },
+              { label: 'Frais', val: 'Frais' },
+            ].map(tab => (
+              <button
+                key={tab.val}
+                type="button"
+                onClick={() => setSelectedFilter(tab.val)}
+                className={`px-3 sm:px-4 py-2 rounded-full text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
+                  selectedFilter === tab.val
+                    ? 'bg-zinc-950 text-white font-semibold shadow-xs'
+                    : 'bg-white border border-zinc-200 text-zinc-600 hover:text-zinc-950 hover:border-zinc-400'
+                }`}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Clean Responsive Product Grid: 2 cols mobile, 3 cols tablet/iPad, 4 cols desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 xl:gap-6">
+          {filteredPerfumes.map(perfume => (
+            <PerfumeCard
+              key={perfume.id}
+              perfume={perfume}
+              onOpenDetails={p => setSelectedPerfume(p)}
+            />
+          ))}
+        </div>
       </section>
 
       {/* 2. AVIS CLIENTS */}
       <section
         id="savoir-faire"
-        className="py-16 sm:py-20 border-t border-zinc-200/80 bg-[#f3f1ec]"
+        className="py-12 sm:py-20 border-t border-zinc-200/80 bg-[#f3f1ec]"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-2">
+          <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.22em] text-zinc-500 mb-1.5 sm:mb-2">
               Avis Clients Vérifiés
             </p>
-            <h2 className="font-serif text-3xl sm:text-4xl text-zinc-950 font-normal">
+            <h2 className="font-serif text-xl sm:text-3xl text-zinc-950 font-bold">
               Noté 4.9/5 par plus de 650 clients
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {[
               {
                 name: 'Karim D.',

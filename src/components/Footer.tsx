@@ -40,7 +40,7 @@ export default function Footer() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500 mb-2">
               Questions Fréquentes
             </p>
-            <h3 className="font-serif text-3xl text-zinc-950 font-normal">
+            <h3 className="font-serif text-2xl text-zinc-950 font-bold">
               Besoin d&apos;une information ?
             </h3>
           </div>
@@ -80,44 +80,44 @@ export default function Footer() {
       <div className="bg-[#08080a] text-zinc-400 border-t border-zinc-800">
         {/* 4 Guarantees Bar */}
         <div className="border-b border-white/[0.08]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
-                <Clock className="w-4 h-4" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
+                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-white">Tenue 24h+</p>
-                <p className="text-[11px] text-zinc-400">Extrait concentré à 30%</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
-                <Truck className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-white">Expédition 24/48h</p>
-                <p className="text-[11px] text-zinc-400">Mondial Relay &amp; Colissimo</p>
+              <div className="min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-white truncate">Tenue 24h+</p>
+                <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">Extrait concentré à 30%</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
-                <ShieldCheck className="w-4 h-4" />
+            <div className="flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
+                <Truck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-white">Paiement Sécurisé</p>
-                <p className="text-[11px] text-zinc-400">Stripe, Apple Pay &amp; CB</p>
+              <div className="min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-white truncate">Expédition 24/48h</p>
+                <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">Mondial Relay &amp; Colissimo</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
-                <Award className="w-4 h-4" />
+            <div className="flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-white">HQ Fragrance Paris</p>
-                <p className="text-[11px] text-zinc-400">11 créations exclusives</p>
+              <div className="min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-white truncate">Paiement Sécurisé</p>
+                <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">Stripe, Apple Pay &amp; CB</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 sm:gap-3.5">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white shrink-0">
+                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-white truncate">HQ Fragrance Paris</p>
+                <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">11 créations exclusives</p>
               </div>
             </div>
           </div>
@@ -245,6 +245,18 @@ export default function Footer() {
         {/* Bottom Copyright Bar */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
           <p>© 2026 HQ Fragrance Paris. Tous droits réservés.</p>
+          <p className="text-zinc-400">
+            Site fait par{' '}
+            <a
+              href="https://iyadhadjour.fr/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Iyad Hadjour — Développeur web & IA"
+              className="text-white font-semibold underline underline-offset-4 decoration-white/40 hover:decoration-white transition-colors"
+            >
+              Iyad Hadjour — Développeur web &amp; IA
+            </a>
+          </p>
           <p className="text-zinc-400">
             Haute Parfumerie • Concentration Extrait 30%
           </p>

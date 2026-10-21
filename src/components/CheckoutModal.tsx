@@ -139,14 +139,14 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto bg-white border border-zinc-200 rounded-3xl shadow-2xl z-10 p-6 sm:p-8 text-zinc-900">
+      <div className="relative w-full max-w-xl max-h-[92dvh] overflow-y-auto bg-white border border-zinc-200 rounded-t-3xl sm:rounded-3xl shadow-2xl z-10 p-5 sm:p-8 text-zinc-900">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full bg-zinc-100 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full bg-zinc-100 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200 transition-colors cursor-pointer"
           aria-label="Fermer"
         >
           <X className="w-4 h-4" />
@@ -160,7 +160,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
             </span>
           </div>
 
-          <h2 className="font-serif text-2xl sm:text-3xl text-zinc-950 font-normal mb-1">
+          <h2 className="font-serif text-xl sm:text-2xl text-zinc-950 font-bold mb-1">
             Finaliser votre commande
           </h2>
 

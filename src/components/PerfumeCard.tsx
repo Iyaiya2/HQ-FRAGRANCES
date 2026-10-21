@@ -27,7 +27,7 @@ export default function PerfumeCard({ perfume, onOpenDetails }: PerfumeCardProps
   return (
     <article
       onClick={() => onOpenDetails(perfume)}
-      className="group luxury-card bg-white border border-zinc-200/90 hover:border-zinc-400 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl"
+      className="group luxury-card bg-white border border-zinc-200/90 hover:border-zinc-400 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl"
     >
       {/* Pure 1:1 Studio Image */}
       <div className="relative aspect-square w-full overflow-hidden bg-zinc-100">
@@ -41,25 +41,25 @@ export default function PerfumeCard({ perfume, onOpenDetails }: PerfumeCardProps
         />
 
         {perfume.badge && (
-          <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-zinc-950 border border-zinc-200/80 text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-xs">
+          <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/95 backdrop-blur-md text-zinc-950 border border-zinc-200/80 text-[9px] sm:text-[0.65rem] font-semibold tracking-wider uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-xs">
             {perfume.badge}
           </span>
         )}
       </div>
 
       {/* Simple, Clean Card Content */}
-      <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between gap-4">
+      <div className="p-2.5 sm:p-5 flex flex-col flex-1 justify-between gap-2.5 sm:gap-4">
         <div>
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="font-serif text-xl sm:text-2xl font-normal text-zinc-950 group-hover:text-zinc-700 transition-colors">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5 sm:gap-2">
+            <h3 className="font-serif text-sm sm:text-lg font-semibold text-zinc-950 group-hover:text-zinc-700 transition-colors leading-tight truncate">
               {perfume.name}
             </h3>
-            <span className="text-[11px] text-zinc-500 font-medium shrink-0">
+            <span className="text-[10px] sm:text-[0.7rem] text-zinc-500 font-medium shrink-0">
               {perfume.family}
             </span>
           </div>
 
-          <p className="text-xs text-zinc-500 mt-1 line-clamp-1 font-normal">
+          <p className="text-[10px] sm:text-xs text-zinc-500 mt-1 line-clamp-1 font-normal">
             {[
               ...perfume.notes.top.slice(0, 1),
               ...perfume.notes.heart.slice(0, 1),
@@ -69,29 +69,31 @@ export default function PerfumeCard({ perfume, onOpenDetails }: PerfumeCardProps
         </div>
 
         {/* Effortless Size + Price Selection & Add to Cart */}
-        <div className="space-y-2.5" onClick={e => e.stopPropagation()}>
-          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#f4f3ef] border border-zinc-200/70">
+        <div className="space-y-1.5 sm:space-y-2.5" onClick={e => e.stopPropagation()}>
+          <div className="grid grid-cols-2 gap-1 sm:gap-1.5 p-0.5 sm:p-1 rounded-lg sm:rounded-xl bg-[#f4f3ef] border border-zinc-200/70">
             <button
               type="button"
               onClick={() => setSelectedSize('50ml')}
-              className={`py-1.5 px-2 rounded-lg text-xs transition-all cursor-pointer ${
+              className={`py-1.5 px-1 sm:px-2 rounded-md sm:rounded-lg text-[10px] sm:text-xs whitespace-nowrap transition-all cursor-pointer ${
                 selectedSize === '50ml'
                   ? 'bg-white text-zinc-950 font-semibold border border-zinc-300 shadow-2xs'
                   : 'text-zinc-600 hover:text-zinc-950 border border-transparent'
               }`}
             >
-              50 ml · {perfume.price} €
+              <span className="sm:hidden">50ml · {perfume.price}€</span>
+              <span className="hidden sm:inline">50 ml · {perfume.price} €</span>
             </button>
             <button
               type="button"
               onClick={() => setSelectedSize('100ml')}
-              className={`py-1.5 px-2 rounded-lg text-xs transition-all cursor-pointer ${
+              className={`py-1.5 px-1 sm:px-2 rounded-md sm:rounded-lg text-[10px] sm:text-xs whitespace-nowrap transition-all cursor-pointer ${
                 selectedSize === '100ml'
                   ? 'bg-white text-zinc-950 font-semibold border border-zinc-300 shadow-2xs'
                   : 'text-zinc-600 hover:text-zinc-950 border border-transparent'
               }`}
             >
-              100 ml · {perfume.price100ml} €
+              <span className="sm:hidden">100ml · {perfume.price100ml}€</span>
+              <span className="hidden sm:inline">100 ml · {perfume.price100ml} €</span>
             </button>
           </div>
 
@@ -99,7 +101,7 @@ export default function PerfumeCard({ perfume, onOpenDetails }: PerfumeCardProps
             type="button"
             onClick={handleAdd}
             disabled={justAdded}
-            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`w-full py-2.5 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-semibold text-[11px] sm:text-xs tracking-wide whitespace-nowrap transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               justAdded
                 ? 'bg-emerald-600 text-white'
                 : 'bg-zinc-950 hover:bg-zinc-800 text-white'
@@ -107,12 +109,13 @@ export default function PerfumeCard({ perfume, onOpenDetails }: PerfumeCardProps
           >
             {justAdded ? (
               <>
-                <Check className="w-4 h-4" />
-                <span>Ajouté au panier</span>
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span className="sm:hidden">Ajouté</span>
+                <span className="hidden sm:inline">Ajouté au panier</span>
               </>
             ) : (
               <>
-                <ShoppingBag className="w-3.5 h-3.5" />
+                <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
                 <span>Ajouter • {currentPrice} €</span>
               </>
             )}

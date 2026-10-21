@@ -1,27 +1,13 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import { Montserrat } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cartContext';
 
-const cormorant = Cormorant_Garamond({
-  variable: '--font-cormorant',
+const montserrat = Montserrat({
+  variable: '--font-montserrat',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
   style: ['normal', 'italic'],
-  display: 'swap',
-});
-
-const jakarta = Plus_Jakarta_Sans({
-  variable: '--font-jakarta',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  display: 'swap',
-});
-
-const jetbrains = JetBrains_Mono({
-  variable: '--font-jetbrains',
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
   display: 'swap',
 });
 
@@ -39,9 +25,9 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${cormorant.variable} ${jakarta.variable} ${jetbrains.variable} h-full antialiased dark scroll-smooth`}
+      className={`${montserrat.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col bg-[#060608] text-[#f5f3ef] font-sans selection:bg-amber-500/30 selection:text-amber-200">
+      <body className="min-h-full flex flex-col bg-[#faf9f6] text-[#111113] font-sans selection:bg-zinc-900 selection:text-white">
         <CartProvider>{children}</CartProvider>
       </body>
     </html>

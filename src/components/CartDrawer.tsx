@@ -37,13 +37,13 @@ export default function CartDrawer() {
           onClick={() => setIsOpen(false)}
         />
 
-        <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+        <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
           <div className="w-screen max-w-md bg-white border-l border-zinc-200 text-zinc-900 flex flex-col shadow-2xl">
             {/* Header */}
-            <div className="p-5 border-b border-zinc-200 flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-zinc-200 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <ShoppingBag className="w-5 h-5 text-zinc-950" />
-                <h2 className="font-serif text-xl font-normal text-zinc-950">
+                <h2 className="font-serif text-lg font-bold text-zinc-950">
                   Panier ({totalItemsCount})
                 </h2>
               </div>
