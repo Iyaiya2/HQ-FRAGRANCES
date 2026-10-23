@@ -140,3 +140,95 @@ export function setAdminPin(pin: string): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(ADMIN_PIN_KEY, pin);
 }
+
+const ADMIN_PHONE_KEY = 'hq_fragrance_admin_phone';
+const ADMIN_2FA_ENABLED_KEY = 'hq_fragrance_admin_2fa_enabled';
+const ADMIN_FAILED_ATTEMPTS_KEY = 'hq_fragrance_admin_failed_attempts';
+const ADMIN_LOCKOUT_UNTIL_KEY = 'hq_fragrance_admin_lockout_until';
+const ADMIN_LOGIN_LOGS_KEY = 'hq_fragrance_admin_login_logs';
+
+export function getAdminPhone(): string {
+  if (typeof window === 'undefined') return '06 12 34 56 78';
+  return localStorage.getItem(ADMIN_PHONE_KEY) || '06 12 34 56 78';
+}
+
+export function setAdminPhone(phone: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(ADMIN_PHONE_KEY, phone);
+}
+
+export function getIs2FAEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+  const stored = localStorage.getItem(ADMIN_2FA_ENABLED_KEY);
+  return stored === null ? true : stored === 'true';
+}
+
+export function setIs2FAEnabled(enabled: boolean): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(ADMIN_2FA_ENABLED_KEY, enabled ? 'true' : 'false');
+}
+
+export function getFailedAttempts(): number {
+  if (typeof window === 'undefined') return 0;
+  return Number(localStorage.getItem(ADMIN_FAILED_ATTEMPTS_KEY)) || 0;
+}
+
+export function incrementFailedAttempts(): number {
+  if (typeof window === 'undefined') return 1;
+  const count = getFailedAttempts() + 1;
+  localStorage.setItem(ADMIN_FAILED_ATTEMPTS_KEY, count.toString());
+  if (count >= 5) {
+    // Lock for 15 minutes
+    const lockoutUntil = Date.now() + 15 * 60 * 1000;
+    localStorage.setItem(ADMIN_LOCKOUT_UNTIL_KEY, lockoutUntil.toString());
+  }
+  return count;
+}
+
+export function resetFailedAttempts(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(ADMIN_FAILED_ATTEMPTS_KEY);
+  localStorage.removeItem(ADMIN_LOCKOUT_UNTIL_KEY);
+}
+
+export function getLockoutUntil(): number | null {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem(ADMIN_LOCKOUT_UNTIL_KEY);
+  if (!stored) return null;
+  const until = Number(stored);
+  if (Date.now() > until) {
+    resetFailedAttempts();
+    return null;
+  }
+  return until;
+}
+
+export interface LoginLog {
+  id: string;
+  date: string;
+  method: 'PIN + 2FA WhatsApp' | 'PIN + 2FA SMS' | 'PIN Seul';
+  success: boolean;
+}
+
+export function getLoginLogs(): LoginLog[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(ADMIN_LOGIN_LOGS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addLoginLog(method: LoginLog['method'], success: boolean): void {
+  if (typeof window === 'undefined') return;
+  const current = getLoginLogs();
+  const newLog: LoginLog = {
+    id: `log-${Date.now()}`,
+    date: new Date().toISOString(),
+    method,
+    success,
+  };
+  const updated = [newLog, ...current].slice(0, 10);
+  localStorage.setItem(ADMIN_LOGIN_LOGS_KEY, JSON.stringify(updated));
+}

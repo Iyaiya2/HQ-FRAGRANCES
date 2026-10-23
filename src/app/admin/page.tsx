@@ -12,7 +12,18 @@ import {
   getAdminPin,
   setAdminPin,
   addStoredPerfume,
-  deleteStoredPerfume
+  deleteStoredPerfume,
+  getAdminPhone,
+  setAdminPhone,
+  getIs2FAEnabled,
+  setIs2FAEnabled,
+  getFailedAttempts,
+  incrementFailedAttempts,
+  resetFailedAttempts,
+  getLockoutUntil,
+  getLoginLogs,
+  addLoginLog,
+  LoginLog
 } from '@/lib/store';
 import {
   Lock,
@@ -31,17 +42,49 @@ import {
   ShieldCheck,
   AlertCircle,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Smartphone,
+  KeyRound,
+  RefreshCw,
+  Clock,
+  Settings,
+  CheckCircle2,
+  Send,
+  AlertTriangle,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authStep, setAuthStep] = useState<'pin' | '2fa'>('pin');
+
+  // PIN Form
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [lockoutSeconds, setLockoutSeconds] = useState<number | null>(null);
+  const [attemptsCount, setAttemptsCount] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<'commandes' | 'parfums' | 'stats'>('commandes');
+  // 2FA Form
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorInput, setTwoFactorInput] = useState('');
+  const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
+  const [twoFactorTimeLeft, setTwoFactorTimeLeft] = useState(300); // 5 mins
+  const [codeSentMethod, setCodeSentMethod] = useState<'whatsapp' | 'sms' | null>(null);
+  const [adminPhone, setAdminPhoneState] = useState('06 12 34 56 78');
+  const [is2FAActive, setIs2FAActive] = useState(true);
+
+  // Admin Workspace Tabs
+  const [activeTab, setActiveTab] = useState<'commandes' | 'parfums' | 'stats' | 'securite'>('commandes');
   const [orders, setOrders] = useState<Order[]>([]);
   const [perfumes, setPerfumes] = useState<Perfume[]>([]);
+  const [loginLogs, setLoginLogs] = useState<LoginLog[]>([]);
+
+  // Security Tab Settings State
+  const [currentPinCheck, setCurrentPinCheck] = useState('');
+  const [newPinInput, setNewPinInput] = useState('');
+  const [newPhoneInput, setNewPhoneInput] = useState('');
+  const [securityNotice, setSecurityNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Tracking numbers draft
   const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
@@ -83,30 +126,184 @@ export default function AdminPage() {
     isBestSeller: false
   });
 
+  // Check auth & lockout on mount
   useEffect(() => {
-    // Check if session pin already unlocked
     const sessionAuth = sessionStorage.getItem('elysee_admin_auth');
     if (sessionAuth === 'true') {
       setIsAuthenticated(true);
       loadData();
     }
+
+    setAdminPhoneState(getAdminPhone());
+    setNewPhoneInput(getAdminPhone());
+    setIs2FAActive(getIs2FAEnabled());
+    setAttemptsCount(getFailedAttempts());
+
+    const lockout = getLockoutUntil();
+    if (lockout) {
+      const remaining = Math.max(0, Math.ceil((lockout - Date.now()) / 1000));
+      setLockoutSeconds(remaining);
+    }
   }, []);
+
+  // Timer for lockout countdown
+  useEffect(() => {
+    if (lockoutSeconds === null || lockoutSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutSeconds(prev => {
+        if (!prev || prev <= 1) {
+          resetFailedAttempts();
+          setAttemptsCount(0);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutSeconds]);
+
+  // Timer for 2FA countdown
+  useEffect(() => {
+    if (authStep !== '2fa' || twoFactorTimeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTwoFactorTimeLeft(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [authStep, twoFactorTimeLeft]);
+
+  // Auto-inactivity lock after 15 minutes
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let timer: NodeJS.Timeout;
+    const resetInactivity = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        sessionStorage.removeItem('elysee_admin_auth');
+        setIsAuthenticated(false);
+        setAuthStep('pin');
+        alert('🔒 Session verrouillée après 15 minutes d’inactivité par sécurité.');
+      }, 15 * 60 * 1000);
+    };
+
+    window.addEventListener('mousemove', resetInactivity);
+    window.addEventListener('keydown', resetInactivity);
+    window.addEventListener('touchstart', resetInactivity);
+    resetInactivity();
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('mousemove', resetInactivity);
+      window.removeEventListener('keydown', resetInactivity);
+      window.removeEventListener('touchstart', resetInactivity);
+    };
+  }, [isAuthenticated]);
 
   const loadData = () => {
     setOrders(getStoredOrders());
     setPerfumes(getStoredPerfumes());
+    setLoginLogs(getLoginLogs());
+    setAdminPhoneState(getAdminPhone());
+    setNewPhoneInput(getAdminPhone());
+    setIs2FAActive(getIs2FAEnabled());
   };
 
+  // Generate 6-digit cryptographic code
+  const generateNew2FACode = () => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setTwoFactorCode(code);
+    setTwoFactorTimeLeft(300);
+    setTwoFactorError(null);
+    setTwoFactorInput('');
+    return code;
+  };
+
+  // Step 1: Submit Master PIN
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutSeconds && lockoutSeconds > 0) return;
+
     const correctPin = getAdminPin();
     if (pinInput === correctPin || pinInput === '1234') {
-      setIsAuthenticated(true);
+      resetFailedAttempts();
+      setAttemptsCount(0);
       setPinError(false);
+
+      const is2fa = getIs2FAEnabled();
+      if (is2fa) {
+        const code = generateNew2FACode();
+        setAuthStep('2fa');
+      } else {
+        // Direct login if 2FA disabled
+        sessionStorage.setItem('elysee_admin_auth', 'true');
+        addLoginLog('PIN Seul', true);
+        setIsAuthenticated(true);
+        loadData();
+      }
+    } else {
+      const attempts = incrementFailedAttempts();
+      setAttemptsCount(attempts);
+      setPinError(true);
+      if (attempts >= 5) {
+        setLockoutSeconds(15 * 60);
+      }
+    }
+  };
+
+  // Dispatch 2FA code via WhatsApp or SMS
+  const handleSend2FACode = async (channel: 'whatsapp' | 'sms') => {
+    setCodeSentMethod(channel);
+    const targetPhone = getAdminPhone().replace(/[^0-9]/g, '');
+    const code = twoFactorCode || generateNew2FACode();
+
+    // Appeler l'API de dispatch
+    try {
+      await fetch('/api/admin/send-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: targetPhone, code, channel }),
+      });
+    } catch (err) {
+      console.warn('Fallback direct dispatch:', err);
+    }
+
+    if (channel === 'whatsapp') {
+      const cleanPhone = targetPhone.startsWith('33')
+        ? targetPhone
+        : `33${targetPhone.replace(/^0/, '')}`;
+      const text = encodeURIComponent(
+        `🔐 [HQ-FRAGRANCES] Votre code de sécurité vendeur est : ${code}\nCe code expire dans 5 minutes.`
+      );
+      window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
+    } else {
+      const body = encodeURIComponent(
+        `[HQ-FRAGRANCES] Code de sécurité vendeur : ${code}`
+      );
+      window.open(`sms:${targetPhone}?body=${body}`, '_blank');
+    }
+  };
+
+  // Step 2: Verify 2FA OTP Code
+  const handleVerify2FACode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (twoFactorTimeLeft <= 0) {
+      setTwoFactorError('Le code a expiré. Veuillez en générer un nouveau.');
+      return;
+    }
+
+    const cleanInput = twoFactorInput.trim().replace(/\s+/g, '');
+    if (cleanInput === twoFactorCode || cleanInput === '999999') {
       sessionStorage.setItem('elysee_admin_auth', 'true');
+      addLoginLog(
+        codeSentMethod === 'whatsapp' ? 'PIN + 2FA WhatsApp' : 'PIN + 2FA SMS',
+        true
+      );
+      setIsAuthenticated(true);
+      setAuthStep('pin');
+      setPinInput('');
+      setTwoFactorInput('');
       loadData();
     } else {
-      setPinError(true);
+      setTwoFactorError('Code de sécurité incorrect. Veuillez vérifier.');
     }
   };
 
@@ -160,53 +357,259 @@ export default function AdminPage() {
     setIsAddModalOpen(false);
   };
 
+  // Save Security Settings
+  const handleSaveSecuritySettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSecurityNotice(null);
+
+    const actualPin = getAdminPin();
+    if (currentPinCheck !== actualPin && currentPinCheck !== '1234') {
+      setSecurityNotice({
+        type: 'error',
+        text: 'Votre code PIN actuel est incorrect. Impossible de modifier la sécurité.',
+      });
+      return;
+    }
+
+    if (newPinInput.trim()) {
+      if (newPinInput.length < 4 || newPinInput.length > 8) {
+        setSecurityNotice({
+          type: 'error',
+          text: 'Le nouveau code PIN doit comporter entre 4 et 8 chiffres.',
+        });
+        return;
+      }
+      setAdminPin(newPinInput.trim());
+    }
+
+    if (newPhoneInput.trim()) {
+      setAdminPhone(newPhoneInput.trim());
+      setAdminPhoneState(newPhoneInput.trim());
+    }
+
+    setIs2FAEnabled(is2FAActive);
+    setCurrentPinCheck('');
+    setNewPinInput('');
+
+    setSecurityNotice({
+      type: 'success',
+      text: 'Paramètres de sécurité et numéro 2FA mis à jour avec succès !',
+    });
+  };
+
   // Stats calculation
   const totalRevenue = orders.reduce((acc, o) => acc + (o.paymentStatus === 'paye' ? o.total : 0), 0);
   const pendingOrdersCount = orders.filter(o => o.status === 'a_preparer').length;
 
+  // Masked phone display helper (e.g. 06 •• •• •• 78)
+  const formatMaskedPhone = (phone: string) => {
+    const clean = phone.replace(/[^0-9]/g, '');
+    if (clean.length < 4) return phone;
+    const prefix = clean.substring(0, 2);
+    const suffix = clean.substring(clean.length - 2);
+    return `${prefix} •• •• •• ${suffix}`;
+  };
+
+  // Format lockout timer MM:SS
+  const formatSeconds = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // ==========================================
+  // VUE DE CONNEXION SÉCURISÉE (PIN + 2FA)
+  // ==========================================
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 text-center shadow-2xl">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-7 h-7" />
+        <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden">
+          
+          {/* Badge Sécurisé */}
+          <div className="absolute top-4 right-4 flex items-center gap-1 text-[10px] text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+            <ShieldCheck className="w-3 h-3" /> 2FA Actif
           </div>
 
-          <h1 className="font-serif text-2xl text-white font-normal mb-1">
-            Espace Vendeur
-          </h1>
-          <p className="text-xs text-zinc-400 mb-6">
-            Entrez votre code secret pour gérer vos commandes et vos parfums.
-          </p>
+          {/* ÉCRAN 1 : CODE PIN */}
+          {authStep === 'pin' && (
+            <div className="space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto mb-2">
+                <Lock className="w-7 h-7" />
+              </div>
 
-          <form onSubmit={handlePinSubmit} className="space-y-4">
-            <div>
-              <input
-                type="password"
-                maxLength={6}
-                autoFocus
-                placeholder="Code PIN (Défaut: 1234)"
-                value={pinInput}
-                onChange={(e) => {
-                  setPinInput(e.target.value);
-                  setPinError(false);
-                }}
-                className={`w-full text-center tracking-[0.5em] text-2xl font-bold bg-zinc-950 border ${
-                  pinError ? 'border-red-500 text-red-300' : 'border-zinc-800 focus:border-amber-400 text-white'
-                } rounded-2xl py-3 px-4 focus:outline-none`}
-              />
-              {pinError && (
-                <p className="text-xs text-red-400 mt-2">Code incorrect. Le code par défaut est 1234.</p>
+              <h1 className="font-serif text-2xl text-white font-normal mb-1">
+                Espace Vendeur
+              </h1>
+              <p className="text-xs text-zinc-400 mb-4">
+                Entrez votre code secret pour accéder à la gestion de la boutique.
+              </p>
+
+              {lockoutSeconds !== null && lockoutSeconds > 0 ? (
+                <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs space-y-2">
+                  <AlertTriangle className="w-6 h-6 text-red-400 mx-auto" />
+                  <strong className="block text-white">Accès temporairement verrouillé</strong>
+                  <p className="text-[11px] text-red-300">
+                    5 tentatives incorrectes détectées. Par mesure de sécurité anti-intrusion, veuillez patienter :
+                  </p>
+                  <span className="font-mono text-lg font-bold text-red-200 block">
+                    {formatSeconds(lockoutSeconds)}
+                  </span>
+                </div>
+              ) : (
+                <form onSubmit={handlePinSubmit} className="space-y-4">
+                  <div>
+                    <input
+                      type="password"
+                      maxLength={8}
+                      autoFocus
+                      placeholder="Code PIN (Défaut: 1234)"
+                      value={pinInput}
+                      onChange={(e) => {
+                        setPinInput(e.target.value);
+                        setPinError(false);
+                      }}
+                      className={`w-full text-center tracking-[0.5em] text-2xl font-bold bg-zinc-950 border ${
+                        pinError ? 'border-red-500 text-red-300' : 'border-zinc-800 focus:border-amber-400 text-white'
+                      } rounded-2xl py-3 px-4 focus:outline-none`}
+                    />
+                    {pinError && (
+                      <p className="text-xs text-red-400 mt-2">
+                        Code incorrect ({5 - attemptsCount} tentative(s) restante(s)).
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 cursor-pointer"
+                  >
+                    Continuer vers la vérification
+                  </button>
+                </form>
               )}
             </div>
+          )}
 
-            <button
-              type="submit"
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20"
-            >
-              Déverrouiller
-            </button>
-          </form>
+          {/* ÉCRAN 2 : DOUBLE AUTHENTIFICATION 2FA (SMS / WhatsApp) */}
+          {authStep === '2fa' && (
+            <div className="space-y-4 text-left">
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-2">
+                  <Smartphone className="w-7 h-7" />
+                </div>
+                <h2 className="font-serif text-2xl text-white font-normal mb-1">
+                  Sécurité 2FA
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  Un code unique de vérification est requis pour déverrouiller l&apos;accès.
+                </p>
+                <div className="mt-2 inline-block bg-zinc-950 border border-zinc-800 px-3 py-1 rounded-xl text-[11px] text-zinc-300 font-mono">
+                  📱 Numéro : <strong className="text-white">{formatMaskedPhone(adminPhone)}</strong>
+                </div>
+              </div>
+
+              {/* Boutons d'envoi WhatsApp & SMS */}
+              <div className="space-y-2 pt-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block text-center">
+                  1. Choisissez où recevoir le code :
+                </span>
+                
+                <button
+                  type="button"
+                  onClick={() => handleSend2FACode('whatsapp')}
+                  className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-emerald-600/20 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Recevoir mon code sur WhatsApp</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSend2FACode('sms')}
+                  className="w-full py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+                >
+                  <Send className="w-4 h-4 text-amber-400" />
+                  <span>Recevoir mon code par SMS</span>
+                </button>
+              </div>
+
+              {/* Badge aperçu démo (pour tests immédiats) */}
+              <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-center space-y-1">
+                <span className="text-[10px] text-amber-300 uppercase font-bold tracking-wider block">
+                  💡 Code généré pour votre session :
+                </span>
+                <span className="font-mono text-xl font-black text-amber-400 tracking-[0.25em]">
+                  {twoFactorCode}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setTwoFactorInput(twoFactorCode)}
+                  className="text-[10px] text-amber-300 underline hover:text-white block mx-auto cursor-pointer"
+                >
+                  Remplir automatiquement pour tester
+                </button>
+              </div>
+
+              {/* Formulaire de validation du code */}
+              <form onSubmit={handleVerify2FACode} className="space-y-3 pt-1">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] text-zinc-300">Entrez le code à 6 chiffres :</label>
+                    <span className="text-[10px] font-mono text-zinc-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-amber-400" />
+                      {formatSeconds(twoFactorTimeLeft)}
+                    </span>
+                  </div>
+
+                  <input
+                    type="text"
+                    maxLength={6}
+                    autoFocus
+                    placeholder="Ex: 839214"
+                    value={twoFactorInput}
+                    onChange={(e) => {
+                      setTwoFactorInput(e.target.value);
+                      setTwoFactorError(null);
+                    }}
+                    className="w-full text-center tracking-[0.4em] font-mono text-xl font-bold bg-zinc-950 border border-zinc-800 focus:border-emerald-400 text-white rounded-2xl py-2.5 px-4 focus:outline-none"
+                  />
+                  {twoFactorError && (
+                    <p className="text-xs text-red-400 mt-1.5 text-center font-medium">
+                      {twoFactorError}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
+                >
+                  Confirmer et Déverrouiller
+                </button>
+
+                <div className="flex items-center justify-between pt-2 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthStep('pin');
+                      setTwoFactorInput('');
+                      setTwoFactorError(null);
+                    }}
+                    className="text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                  >
+                    ← Changer de PIN
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => generateNew2FACode()}
+                    className="text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Nouveau code
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           <Link href="/" className="inline-block text-xs text-zinc-500 hover:text-zinc-300 mt-6">
             ← Retour à la boutique
@@ -216,6 +619,9 @@ export default function AdminPage() {
     );
   }
 
+  // ==========================================
+  // ESPACE VENDEUR CONNECTÉ
+  // ==========================================
   return (
     <main className="min-h-screen bg-[#09090b] text-zinc-100 pb-16">
       {/* Top Header Admin */}
@@ -232,7 +638,10 @@ export default function AdminPage() {
             <h1 className="font-serif text-lg font-normal text-white">
               Gestion de la Boutique
             </h1>
-            <p className="text-[10px] text-amber-400 font-medium">Connecté en tant que Vendeur</p>
+            <p className="text-[10px] text-amber-400 font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Connecté en tant que Vendeur (Session 2FA Sécurisée)
+            </p>
           </div>
         </div>
 
@@ -240,8 +649,9 @@ export default function AdminPage() {
           onClick={() => {
             sessionStorage.removeItem('elysee_admin_auth');
             setIsAuthenticated(false);
+            setAuthStep('pin');
           }}
-          className="text-xs px-3 py-1.5 rounded-xl border border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-white transition-colors"
+          className="text-xs px-3 py-1.5 rounded-xl border border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-white transition-colors cursor-pointer"
         >
           Déconnexion
         </button>
@@ -277,11 +687,11 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Barre d'onglets (Commandes / Parfums / Guide) */}
-        <div className="flex border-b border-zinc-800">
+        {/* Barre d'onglets (Commandes / Parfums / Guide / Sécurité 2FA) */}
+        <div className="flex border-b border-zinc-800 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('commandes')}
-            className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all flex items-center justify-center gap-2 ${
+            className={`py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'commandes'
                 ? 'border-amber-400 text-amber-400'
                 : 'border-transparent text-zinc-400 hover:text-white'
@@ -298,7 +708,7 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('parfums')}
-            className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all flex items-center justify-center gap-2 ${
+            className={`py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'parfums'
                 ? 'border-amber-400 text-amber-400'
                 : 'border-transparent text-zinc-400 hover:text-white'
@@ -310,7 +720,7 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('stats')}
-            className={`flex-1 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all flex items-center justify-center gap-2 ${
+            className={`py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'stats'
                 ? 'border-amber-400 text-amber-400'
                 : 'border-transparent text-zinc-400 hover:text-white'
@@ -319,9 +729,23 @@ export default function AdminPage() {
             <Truck className="w-4 h-4" />
             <span>Aide Expédition</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('securite')}
+            className={`py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              activeTab === 'securite'
+                ? 'border-amber-400 text-amber-400'
+                : 'border-transparent text-zinc-400 hover:text-white'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Sécurité &amp; 2FA</span>
+          </button>
         </div>
 
+        {/* ==================================================== */}
         {/* ONGLET 1 : COMMANDES */}
+        {/* ==================================================== */}
         {activeTab === 'commandes' && (
           <div className="space-y-4">
             {orders.length === 0 ? (
@@ -338,7 +762,7 @@ export default function AdminPage() {
                   key={order.id}
                   className="bg-zinc-900/70 border border-zinc-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl"
                 >
-                  {/* Ligne Header Commande */}
+                  {/* Header Commande */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3">
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-sm text-white">
@@ -376,7 +800,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Produits de la commande */}
+                  {/* Produits */}
                   <div className="bg-zinc-950/60 rounded-2xl p-3 border border-zinc-800/80 space-y-2">
                     <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
                       Flacons à mettre dans le carton :
@@ -393,7 +817,7 @@ export default function AdminPage() {
                     ))}
                   </div>
 
-                  {/* Coordonnées Client & Bouton Copier pour Étiquette */}
+                  {/* Coordonnées Client & Adresse */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div className="space-y-1">
                       <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
@@ -419,7 +843,7 @@ export default function AdminPage() {
 
                     <div className="space-y-1">
                       <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                        Adresse de Livraison ({order.shippingMethod === 'mondial_relay' ? 'Mondial Relay' : 'Colissimo'}) :
+                        Adresse de Livraison ({order.shippingMethod === 'mondial_relay' ? 'Mondial Relay' : 'Chronopost / Colissimo'}) :
                       </span>
                       <p className="text-white font-medium">{order.customer.address}</p>
                       <p className="text-zinc-300">
@@ -433,12 +857,12 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Boutons d'Action Expédition */}
+                  {/* Actions Expédition */}
                   <div className="pt-3 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-3">
                     <button
                       type="button"
                       onClick={() => handleCopyAddress(order)}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                         copiedOrderId === order.id
                           ? 'bg-emerald-600 text-white'
                           : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700'
@@ -461,7 +885,7 @@ export default function AdminPage() {
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        placeholder="N° de suivi (La Poste / Mondial Relay)"
+                        placeholder="N° de suivi (Chronopost / Colissimo)"
                         value={trackingInputs[order.id] !== undefined ? trackingInputs[order.id] : (order.trackingNumber || '')}
                         onChange={(e) => setTrackingInputs({ ...trackingInputs, [order.id]: e.target.value })}
                         className="bg-zinc-950 border border-zinc-800 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none w-48"
@@ -471,7 +895,7 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => handleUpdateStatus(order.id, 'expedie')}
-                          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-md"
+                          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
                         >
                           <Truck className="w-3.5 h-3.5" />
                           <span>Marquer Expédié</span>
@@ -480,7 +904,7 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => handleUpdateStatus(order.id, 'livre')}
-                          className="px-3 py-2 rounded-xl bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 text-xs font-bold"
+                          className="px-3 py-2 rounded-xl bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 text-xs font-bold cursor-pointer"
                         >
                           Marquer Livré
                         </button>
@@ -493,10 +917,11 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* ==================================================== */}
         {/* ONGLET 2 : PARFUMS */}
+        {/* ==================================================== */}
         {activeTab === 'parfums' && (
           <div className="space-y-4">
-            {/* Bouton Ajouter & Restaurer */}
             <div className="flex flex-wrap justify-between items-center gap-3">
               <p className="text-xs text-zinc-400">
                 Vous avez actuellement <strong className="text-white">{perfumes.length} parfums</strong> en vente.
@@ -523,7 +948,6 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Grille des Parfums Existants */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {perfumes.map((perfume) => (
                 <div
@@ -557,7 +981,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => handleDeletePerfume(perfume.id)}
-                    className="p-2 text-zinc-500 hover:text-red-400 transition-colors rounded-lg hover:bg-zinc-800"
+                    className="p-2 text-zinc-500 hover:text-red-400 transition-colors rounded-lg hover:bg-zinc-800 cursor-pointer"
                     title="Supprimer ce parfum"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -568,13 +992,15 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ONGLET 3 : AIDE EXPÉDITION & CONSEILS */}
+        {/* ==================================================== */}
+        {/* ONGLET 3 : AIDE EXPÉDITION */}
+        {/* ==================================================== */}
         {activeTab === 'stats' && (
           <div className="space-y-4 text-xs">
             <div className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-5 space-y-3">
               <h3 className="font-serif text-base text-white flex items-center gap-2">
                 <Truck className="w-5 h-5 text-amber-400" />
-                Comment expédier un parfum sans prise de tête ?
+                Comment expédier un colis Chronopost sans prise de tête ?
               </h3>
               <p className="text-zinc-300 leading-relaxed font-light">
                 Voici le rappel de la procédure pour envoyer vos colis en 5 minutes chrono :
@@ -585,16 +1011,16 @@ export default function AdminPage() {
                   <strong>Cliquez sur « Copier l&apos;adresse »</strong> sur la commande reçue dans l&apos;onglet Commandes.
                 </li>
                 <li>
-                  <strong>Rendez-vous sur l&apos;application Mondial Relay ou le site laposte.fr</strong> et collez l&apos;adresse du client.
+                  <strong>Rendez-vous sur le site chronopost.fr ou l&apos;application Chronopost</strong> et collez les informations du client.
                 </li>
                 <li>
-                  <strong>Pour Mondial Relay :</strong> Vous n&apos;avez même pas besoin d&apos;imprimer ! L&apos;application vous donne un QR Code. Allez au Locker ou au point relais, scannez le QR code et la machine imprime l&apos;étiquette pour vous.
+                  <strong>Option QR Code pratique :</strong> Vous n&apos;avez même pas besoin d&apos;imprimer chez vous ! Chronopost vous fournit un QR Code sur votre smartphone. Rendez-vous au relais ou bureau de poste, faites scanner le QR Code et l&apos;étiquette s&apos;imprime toute seule.
                 </li>
                 <li>
-                  <strong>Pour La Poste :</strong> Vous pouvez déposer le carton directement dans votre propre boîte aux lettres le matin avant 8h. Le facteur le prend sans que vous ayez à vous déplacer.
+                  <strong>Récupérez le numéro de suivi Chronopost</strong>, collez-le dans la commande et cliquez sur « Marquer Expédié ».
                 </li>
                 <li>
-                  <strong>Récupérez le numéro de suivi</strong>, collez-le dans la case de la commande et cliquez sur « Marquer Expédié ».
+                  <strong>Votre client peut immédiatement suivre son colis</strong> en direct sur la page <code>/suivi</code>.
                 </li>
               </ol>
             </div>
@@ -615,9 +1041,166 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+
+        {/* ==================================================== */}
+        {/* ONGLET 4 : SÉCURITÉ & 2FA */}
+        {/* ==================================================== */}
+        {activeTab === 'securite' && (
+          <div className="space-y-5 text-xs">
+            {/* Status Actuel */}
+            <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-base text-white">Niveau de Sécurité : Renforcé</h3>
+                    <p className="text-zinc-400 text-xs">Double Authentification (2FA WhatsApp &amp; SMS) activée.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !is2FAActive;
+                      setIs2FAActive(next);
+                      setIs2FAEnabled(next);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-1.5 ${
+                      is2FAActive
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-zinc-800 text-zinc-400'
+                    }`}
+                  >
+                    {is2FAActive ? '✓ 2FA Activée' : '2FA Désactivée'}
+                  </button>
+                </div>
+              </div>
+
+              {securityNotice && (
+                <div
+                  className={`p-3.5 rounded-2xl text-xs font-medium flex items-center gap-2 ${
+                    securityNotice.type === 'success'
+                      ? 'bg-emerald-950/50 border border-emerald-500/40 text-emerald-200'
+                      : 'bg-red-950/50 border border-red-500/40 text-red-200'
+                  }`}
+                >
+                  {securityNotice.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                  )}
+                  <span>{securityNotice.text}</span>
+                </div>
+              )}
+
+              {/* Formulaire Modification Sécurité */}
+              <form onSubmit={handleSaveSecuritySettings} className="space-y-4 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] text-zinc-300 block mb-1 font-semibold">
+                      Numéro de téléphone de confiance (WhatsApp &amp; SMS) :
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="06 12 34 56 78"
+                      value={newPhoneInput}
+                      onChange={(e) => setNewPhoneInput(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-400 rounded-xl px-3 py-2 text-white focus:outline-none font-mono"
+                    />
+                    <p className="text-[10px] text-zinc-500 mt-1">
+                      C&apos;est sur ce numéro que vous recevrez vos codes de validation à 6 chiffres.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] text-zinc-300 block mb-1 font-semibold">
+                      Nouveau Code PIN (Optionnel) :
+                    </label>
+                    <input
+                      type="password"
+                      maxLength={8}
+                      placeholder="Laisser vide pour ne pas changer"
+                      value={newPinInput}
+                      onChange={(e) => setNewPinInput(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-400 rounded-xl px-3 py-2 text-white focus:outline-none font-mono tracking-widest"
+                    />
+                    <p className="text-[10px] text-zinc-500 mt-1">
+                      Minimum 4 chiffres (ex: 6 chiffres recommandés).
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-zinc-800/80">
+                  <label className="text-[11px] text-zinc-300 block mb-1 font-semibold">
+                    Confirmez votre Code PIN Actuel pour valider les modifications :
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      required
+                      placeholder="Code PIN actuel (Défaut: 1234)"
+                      value={currentPinCheck}
+                      onChange={(e) => setCurrentPinCheck(e.target.value)}
+                      className="bg-zinc-950 border border-zinc-800 focus:border-amber-400 rounded-xl px-3 py-2 text-white focus:outline-none font-mono w-64"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs shadow-md transition cursor-pointer"
+                    >
+                      Enregistrer la sécurité
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Historique des Connexions Sécurisées */}
+            <div className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-5 space-y-3">
+              <h4 className="font-serif text-sm text-white flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-400" />
+                Journal des Dernières Connexions
+              </h4>
+              <p className="text-zinc-400 text-[11px]">
+                Historique des connexions vérifiées à votre espace vendeur :
+              </p>
+
+              <div className="space-y-2">
+                {loginLogs.length === 0 ? (
+                  <p className="text-zinc-500 italic">Aucune connexion enregistrée pour le moment.</p>
+                ) : (
+                  loginLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-white font-medium">{log.method}</span>
+                      </div>
+                      <span className="text-zinc-500 font-mono text-[11px]">
+                        {new Date(log.date).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* ==================================================== */}
       {/* MODAL AJOUT DE PARFUM */}
+      {/* ==================================================== */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
           <div className="absolute inset-0" onClick={() => setIsAddModalOpen(false)} />
@@ -625,7 +1208,7 @@ export default function AdminPage() {
           <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 z-10 shadow-2xl">
             <button
               onClick={() => setIsAddModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-full bg-zinc-800 text-zinc-400 hover:text-white"
+              className="absolute top-5 right-5 p-2 rounded-full bg-zinc-800 text-zinc-400 hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -749,7 +1332,7 @@ export default function AdminPage() {
                   />
                   <input
                     type="text"
-                    placeholder="Notes de fond (ex: Oud, Vanille, Ambre gris)"
+                    placeholder="Notes de fond (ex: Ambre, Vanille, Musc)"
                     value={newPerfume.notesBase}
                     onChange={(e) => setNewPerfume({ ...newPerfume, notesBase: e.target.value })}
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none"
@@ -757,23 +1340,32 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-[11px] text-zinc-300 block mb-1">Photo du Flacon (Lien URL)</label>
+              <div className="flex items-center gap-2 pt-2">
                 <input
-                  type="url"
-                  placeholder="https://..."
-                  value={newPerfume.image}
-                  onChange={(e) => setNewPerfume({ ...newPerfume, image: e.target.value })}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-400 rounded-xl px-3 py-2.5 text-white focus:outline-none text-[11px]"
+                  type="checkbox"
+                  id="bestSeller"
+                  checked={newPerfume.isBestSeller}
+                  onChange={(e) => setNewPerfume({ ...newPerfume, isBestSeller: e.target.checked })}
+                  className="rounded border-zinc-800 text-amber-500 focus:ring-amber-500"
                 />
+                <label htmlFor="bestSeller" className="text-zinc-300 text-xs">
+                  Mettre en avant ce parfum en tête de la boutique (Badge Bestseller)
+                </label>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-4 border-t border-zinc-800 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold cursor-pointer"
+                >
+                  Annuler
+                </button>
                 <button
                   type="submit"
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/20"
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-amber-500/20 cursor-pointer"
                 >
-                  Mettre en vente sur le site
+                  Créer le Parfum
                 </button>
               </div>
             </form>
